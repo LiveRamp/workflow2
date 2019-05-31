@@ -4,7 +4,7 @@ RUN yum -y install ruby ruby-devel make gcc mysql-devel gcc-c++ mysql && gem ins
 
 RUN mkdir -p /apps
 
-COPY databases/workflow_db /apps/workflow_db
+COPY database/ /apps/workflow_db
 
 RUN mkdir -p /apps/workflow_db/config/
 
