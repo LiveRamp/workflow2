@@ -1,6 +1,5 @@
 GEM
-  remote: https://public-gems.liveramp.net/
-  remote: https://private-gems.liveramp.net/
+  remote: https://rubygems.org/
   specs:
     abstract (1.0.0)
     actionmailer (3.0.20)

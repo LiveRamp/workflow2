@@ -1,12 +1,10 @@
-source 'https://public-gems.liveramp.net' do
+
+source 'https://rubygems.org' do
+
   gem 'rails', '3.0.20'
   gem 'mysql2'
   gem 'thrift', '0.9.3.0'
   gem 'activerecord', '3.0.20'
-    # gem 'activerecord-native_db_types_override'
-end
-
-source 'https://private-gems.liveramp.net' do
   gem 'workflow2_types', '1.0.4'
-end
 
+end
