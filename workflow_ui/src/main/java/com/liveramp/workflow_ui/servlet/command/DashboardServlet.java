@@ -68,7 +68,6 @@ public class DashboardServlet extends HttpServlet {
   //  create new dashboard
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-    //  TODO restx this shit
     try {
 
       resp.getWriter().append(new JSONObject().put(

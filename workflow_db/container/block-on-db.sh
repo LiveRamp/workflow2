@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function mysql_conn_error {
-  mysql -h $DB_HOSTNAME -P $DB_PORT -u $DB_USERNAME --password=$DB_PASSWORD -e "show databases"
+  mysql -h ${DB_HOSTNAME} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} -e "show databases"
   return $?
 }
 
