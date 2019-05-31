@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 docker_login() {
     local restore_x
     if [[ $- =~ x ]]; then
