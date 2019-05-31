@@ -1,17 +1,3 @@
-development:
-  database: rapleaf_test
-  adapter: mysql
-  host: 127.0.0.1
-  username: root
-  password:
-
-test:
-  database: rapleaf_test
-  adapter: mysql
-  host: 127.0.0.1
-  username: root
-  password:
-
 workflow_db_test:
   database: workflow_docker_env
   adapter: mysql
