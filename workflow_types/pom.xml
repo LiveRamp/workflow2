@@ -16,7 +16,6 @@
     <thrift.version>thrift-0.11.0-patch-lr2</thrift.version>
   </properties>
 
-
   <dependencies>
 
     <dependency>
@@ -76,18 +75,6 @@
     </plugins>
 
   </build>
-
-
-  <repositories>
-    <repository>
-      <id>all-snapshots</id>
-      <url>http://library.liveramp.net/artifactory/all-snapshots</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-    </repository>
-  </repositories>
 
   <profiles>
     <profile>

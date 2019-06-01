@@ -45,20 +45,4 @@
     </dependency>
   </dependencies>
 
-  <build>
-
-  </build>
-
-
-  <repositories>
-    <repository>
-      <id>all-snapshots</id>
-      <url>http://library.liveramp.net/artifactory/all-snapshots</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-    </repository>
-  </repositories>
-
 </project>
