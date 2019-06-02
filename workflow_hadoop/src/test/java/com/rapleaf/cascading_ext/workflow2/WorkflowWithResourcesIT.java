@@ -68,7 +68,7 @@ public class WorkflowWithResourcesIT extends WorkflowTestCase {
   }
 
   @NotNull
-  private DbStorage.Factory getStorage(IWorkflowDb workflowDb) {
+  private DbStorage.Factory getStorage(DbResourceManager.WorkflowDbFactory workflowDb) {
     return DbResourceManager.dbStorage(workflowDb);
   }
 
@@ -208,7 +208,7 @@ public class WorkflowWithResourcesIT extends WorkflowTestCase {
 
     InitializedWorkflow workflow = initializeWorkflow(
         "Test Workflow",
-        getDeclarer(workflowDb, getStorage(workflowDb))
+        getDeclarer(workflowDb, getStorage(new DbResourceManager.WorkflowDbFactory.Default()))
     );
 
     WorkflowRunner runner = new WorkflowRunner(
@@ -237,7 +237,7 @@ public class WorkflowWithResourcesIT extends WorkflowTestCase {
 
     workflow = initializeWorkflow(
         "Test Workflow",
-        getDeclarer(workflowDb, getStorage(workflowDb))
+        getDeclarer(workflowDb, getStorage(new DbResourceManager.WorkflowDbFactory.Default()))
     );
 
     new WorkflowRunner(
@@ -256,7 +256,7 @@ public class WorkflowWithResourcesIT extends WorkflowTestCase {
 
     workflow = initializeWorkflow(
         "Test Workflow",
-        getDeclarer(workflowDb, getStorage(workflowDb))
+        getDeclarer(workflowDb, getStorage(new DbResourceManager.WorkflowDbFactory.Default()))
     );
 
     new WorkflowRunner(workflow,
