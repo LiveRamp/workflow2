@@ -303,13 +303,11 @@ public abstract class BaseAction<Config> {
     return persistence.getCountersByStep();
   }
 
-  //  TODO package-private after class cleanup
   public TwoNestedMap<String, String, Long> getCurrentStepCounters() throws IOException {
     ThreeNestedMap<String, String, String, Long> allCounters = persistence.getCountersByStep();
     return allCounters.get(getActionId().resolve());
   }
 
-  //  TODO package-private after class cleanup
   public DurationInfo getDurationInfo() throws IOException {
     Map<String, StepState> stepStatuses = persistence.getStepStates();
     StepState stepState = stepStatuses.get(getActionId().resolve());
