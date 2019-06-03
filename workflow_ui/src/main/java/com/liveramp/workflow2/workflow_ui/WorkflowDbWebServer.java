@@ -252,11 +252,12 @@ public class WorkflowDbWebServer implements Runnable {
     thread1.join();
   }
 
-  public static void main(String[] args)  {
+  public static void main(String[] args) throws IOException, InterruptedException {
     try {
       start();
     } catch (Exception e) {
       LOG.error("error", e);
+      throw e;
     }
   }
 }
