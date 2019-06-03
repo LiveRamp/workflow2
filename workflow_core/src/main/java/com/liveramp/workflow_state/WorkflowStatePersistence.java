@@ -13,7 +13,7 @@ import com.liveramp.workflow.types.StepStatus;
 import com.liveramp.workflow.types.WorkflowAttemptStatus;
 import com.liveramp.workflow_core.alerting.AlertsHandlerFactory;
 
-//  TODO decompose these interfaces into viewers and mutaters
+//  TODO somehow split up the interfaces here.  dunno how.
 public interface WorkflowStatePersistence extends InitializedPersistence{
 
   //  user-defined-action triggered

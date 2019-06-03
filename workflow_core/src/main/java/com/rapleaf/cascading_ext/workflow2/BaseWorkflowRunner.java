@@ -160,7 +160,7 @@ public class BaseWorkflowRunner<Config> {
       );
     }
   }
-
+  
   private static String canonicalPath(String path) throws IOException {
     return new File(path).getCanonicalPath();
   }
@@ -190,10 +190,12 @@ public class BaseWorkflowRunner<Config> {
       try {
         for (BaseStep<Config> step : getPhsyicalDependencyGraph().vertexSet()) {
           BaseAction stepAction = step.getAction();
-          Multimap<DSAction, DataStoreInfo> dsInfo = stepAction.getAllDataStoreInfo();
+          if (stepAction != null) { // TODO: check if this check is necessary, it shouldn't be
+            Multimap<DSAction, DataStoreInfo> dsInfo = stepAction.getAllDataStoreInfo();
 
-          checkStepsSandboxViolation(dsInfo.get(DSAction.CREATES), sandboxDir);
-          checkStepsSandboxViolation(dsInfo.get(DSAction.CREATES_TEMPORARY), sandboxDir);
+            checkStepsSandboxViolation(dsInfo.get(DSAction.CREATES), sandboxDir);
+            checkStepsSandboxViolation(dsInfo.get(DSAction.CREATES_TEMPORARY), sandboxDir);
+          }
         }
       } catch (Exception e) {
         throw new RuntimeException(e);
