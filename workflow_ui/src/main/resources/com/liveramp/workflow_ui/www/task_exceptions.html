@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <title>Task Exception Dashboard</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+  <link rel="stylesheet" type="text/css" href="css/task_exceptions.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.min.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<script>
+  configureNavbar($("#navbar"))
+</script>
+
+<h2 class="page-title">Task Exceptions</h2>
+
+<div class="service-container">
+
+  <div class="tabbable"> <!-- Only required for left/right tabs -->
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#all-exceptions" data-toggle="tab">All Exceptions</a></li>
+      <li><a href="#hosts-by-exception" data-toggle="tab">Hosts by Exception</a></li>
+      <li><a href="#exceptions-by-host" data-toggle="tab">Exceptions by Host</a></li>
+      <li><a href="#aggregate-by-app" data-toggle="tab">Aggregate by App</a></li>
+      <li><a href="#aggregate-by-host" data-toggle="tab">Aggregate by Host</a></li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane active" id="all-exceptions">
+        <div class="table-responsive">
+          <table class="table">
+
+            <thead>
+            <tr>
+              <th>Time</th>
+              <th>Exception</th>
+              <th>Host</th>
+              <th>Workflow Attempt ID</th>
+              <th>RM Link</th>
+              <th>Job Name</th>
+              <th>Step Token</th>
+            </tr>
+            </thead>
+            <tbody id="all-exceptions-table">
+            </tbody>
+
+          </table>
+        </div>
+
+      </div>
+
+      <div class="tab-pane" id="hosts-by-exception">
+
+        <div class="table-responsive">
+          <table class="table">
+
+            <thead>
+            <tr>
+              <th>Exception</th>
+              <th>Hosts</th>
+            </tr>
+            </thead>
+            <tbody id="hosts-by-exception-table">
+            </tbody>
+
+          </table>
+        </div>
+
+      </div>
+
+      <div class="tab-pane" id="exceptions-by-host">
+
+        <div class="table-responsive">
+          <table class="table">
+
+            <thead>
+            <tr>
+              <th>Host</th>
+              <th>Exceptions</th>
+            </tr>
+            </thead>
+
+            <tbody id="exceptions-by-host-table">
+            </tbody>
+
+          </table>
+        </div>
+
+      </div>
+
+
+      <div class="tab-pane" id="aggregate-by-app">
+
+        <div class="table-responsive">
+          <table class="table">
+
+            <thead>
+            <tr>
+              <th>Application</th>
+              <th>Count</th>
+            </tr>
+            </thead>
+            <tbody id="aggregate-by-app-table">
+            </tbody>
+
+          </table>
+        </div>
+
+      </div>
+
+
+      <div class="tab-pane" id="aggregate-by-host">
+
+        <div class="table-responsive">
+          <table class="table">
+
+            <thead>
+            <tr>
+              <th>Host</th>
+              <th>Exception Count</th>
+            </tr>
+            </thead>
+            <tbody id="aggregate-by-host-table">
+            </tbody>
+
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script>
+
+  displayType = "all";
+
+  function refreshTable() {
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: "tasks",
+      data: {
+        limit: 1000
+      },
+      success: function (dataStr) {
+        redraw(JSON.parse(dataStr));
+      }
+    });
+
+  }
+
+  function redraw(errorList) {
+
+    populateTaskExceptions(errorList.all, $("#all-exceptions-table"));
+
+    populateException2Hosts(errorList.by_exception, $("#hosts-by-exception-table"));
+
+    populateHostToAggregateExceptions(errorList.by_host, $("#aggregate-by-host-table"));
+
+    populateAppToAggregateExceptions(errorList.by_app, $("#aggregate-by-app-table"));
+
+    populateHost2Exceptions(errorList.by_host, $("#exceptions-by-host-table"));
+
+  }
+
+  refreshTable();
+  setInterval(refreshTable, 60000);
+
+</script>

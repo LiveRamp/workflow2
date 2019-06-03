@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <title>Active Workflows</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
+  <link rel="stylesheet" type="text/css" href="css/c3-0.4.10.min.css">
+  <link rel="stylesheet" type="text/css" href="css/tablesorter-style.css">
+  <link rel="stylesheet" type="text/css" href="css/boostrap-dialog.min.css">
+  <link rel="stylesheet" type="text/css" href="css/select2.min.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/uri.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+  <script type="text/javascript" src="resources/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/c3-0.4.10.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.tablesorter.js"></script>
+  <script type="text/javascript" src="resources/bootstrap-dialog.min.js"></script>
+  <script type="text/javascript" src="resources/d3-tip.js"></script>
+  <script type="text/javascript" src="resources/select2.full.min.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/step_tree.js"></script>
+  <script type="text/javascript" src="js/cost_tab.js"></script>
+  <script type="text/javascript" src="js/trend_tab.js"></script>
+  <script type="text/javascript" src="js/app_cost_history_tab.js"></script>
+  <script type="text/javascript" src="js/alerts_tab.js"></script>
+  <script type="text/javascript" src="js/gantt-chart.js"></script>
+
+
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<script>
+  configureNavbar($("#navbar"))
+</script>
+
+<div class="service-container">
+  <h3><b id="dashboard-name"></b></h3>
+
+  <div class="tabbable"> <!-- Only required for left/right tabs -->
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#executions" data-toggle="tab">Executions</a></li>
+      <li><a href="#configure" data-toggle="tab">Configure</a></li>
+    </ul>
+
+    <div class="tab-content">
+
+      <div class="active tab-pane" id="executions">
+
+        <div class="container-fluid service-container">
+          <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading"><h4>Live</h4></div>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Scope</th>
+                    <th>Started</th>
+                    <th>Ended</th>
+                    <th>Status</th>
+                    <th>Host</th>
+                    <th>User</th>
+                    <th>Dir</th>
+                    <th>Jar</th>
+                    <th>Commit</th>
+                    <th>Execution</th>
+                  </tr>
+                  </thead>
+                  <tbody id="live_attempts">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="panel panel-default" id="time_out_table">
+              <div class="panel-heading"><h4>Died Unclean</h4></div>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Scope</th>
+                    <th>Started</th>
+                    <th>Ended</th>
+                    <th>Status</th>
+                    <th>Host</th>
+                    <th>User</th>
+                    <th>Dir</th>
+                    <th>Jar</th>
+                    <th>Commit</th>
+                    <th>Execution</th>
+                  </tr>
+                  </thead>
+                  <tbody id="timed_out_attempts">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading"><h4>Stopped</h4></div>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Scope</th>
+                    <th>Started</th>
+                    <th>Ended</th>
+                    <th>Status</th>
+                    <th>Host</th>
+                    <th>User</th>
+                    <th>Dir</th>
+                    <th>Jar</th>
+                    <th>Commit</th>
+                    <th>Execution</th>
+                  </tr>
+                  </thead>
+                  <tbody id="stopped_attempts">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="tab-pane" id="configure">
+
+        <div class="container-fluid service-container">
+
+          <br>
+          <button type="button" id="add-application" class="btn btn-success">Add Application</button>
+
+          <table class="table">
+
+            <thead>
+            <tr>
+              <th>Application</th>
+              <th></th>
+            </tr>
+            </thead>
+
+            <tbody id="applications">
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
+
+<script>
+
+  //  hackity hack https://stackoverflow.com/questions/13649459/twitter-bootstrap-multiple-modal-error/15856139#15856139
+
+  var params = getURLParams();
+  var name = params.name;
+  $("#dashboard-name").text(name);
+
+  var recentList = [];
+  var runningList = [];
+  var stoppedList = [];
+
+  $("#add-application").click(function (e) {
+    e.preventDefault();
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'HTML',
+      url: 'applications',
+      success: function (data) {
+
+        var apps = JSON.parse(data).applications;
+        var opts = $("<select class='wide-select' id='app-select' multiple='multiple'></select>");
+
+        //  TODO filter for stuff which isn't added already.
+        _.sortBy(apps, function(e){
+          return e.name
+        }).forEach(function (e) {
+          opts.append($("<option></option>").attr('value', e.name).text(e.name))
+        });
+
+        BootstrapDialog.show({
+          title: 'Add Application',
+          message: opts,
+          onshown: function () {
+            $("#app-select").select2({
+              dropdownParent: $('.modal-dialog')
+            });
+          },
+          buttons: [
+            cancelButton(),
+            submitButton(function (dialog) {
+                var apps = $("#app-select").val();
+                dialog.close();
+
+                //  whatev
+                apps.forEach(function(app){
+                  $.ajax({
+
+                    type: 'POST',
+                    data: {
+                      name: name,
+                      cmd: 'add_application',
+                      application_name: app
+                    },
+                    url: "dashboards",
+                    success: reload
+                  })
+
+                })
+
+              }
+            )
+          ]
+        })
+
+      }
+
+    })
+
+  });
+
+  //  TODO share this logic with global.html
+  function reloadExecutions(){
+
+    //  everything which is still running
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: "executions",
+      data: {
+        status: "INCOMPLETE",
+        dashboard: name,
+        process_status: "ALIVE",
+        started_after: moment().startOf('hour') - RUNNING_WINDOW,
+        limit: 10000
+      },
+      success: function (dataStr) {
+        runningList = JSON.parse(dataStr).values;
+        redrawTables();
+      }
+    });
+
+    //  everything incomplete in the past week (include failed and died unclean)
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: "executions",
+      data: {
+        status: "INCOMPLETE",
+        dashboard: name,
+        started_after: moment().startOf('hour') - STOPPED_WINDOW,
+        limit: 10000
+      },
+      success: function (dataStr) {
+        stoppedList = JSON.parse(dataStr).values;
+        redrawTables();
+      }
+    });
+
+    //  everything else in the past day
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: "executions",
+      data: {
+        dashboard: name,
+        started_after: moment().startOf('hour') - ATTEMPT_WINDOW,
+        limit: 10000
+      },
+      success: function (dataStr) {
+        recentList = JSON.parse(dataStr).values;
+        redrawTables();
+      }
+    });
+
+  }
+
+  function redrawTables() {
+
+    var groups = _.groupBy(runningList.concat(recentList.concat(stoppedList)), function(e){
+      return e.attempts[0].process_status;
+    });
+
+    populateExecutions(groups.ALIVE, $("#live_attempts"));
+    populateExecutions(groups.TIMED_OUT, $("#timed_out_attempts"));
+    populateExecutions(groups.STOPPED, $("#stopped_attempts"));
+
+    if (groups.TIMED_OUT) {
+      $("#time_out_table").show();
+    } else {
+      $("#time_out_table").hide();
+    }
+
+  }
+
+
+  function reloadConfiguration() {
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      data: {
+        name: name,
+        cmd: "get_config"
+      },
+      url: "dashboards",
+      success: function (data) {
+        var parsed = JSON.parse(data);
+        var dashboard = parsed.dashboards[0];
+
+        var appTable = $("#applications");
+        appTable.empty();
+
+        dashboard.applications.sort().forEach(function (app) {
+
+          var button = $("<button></button>")
+            .attr('type', 'button')
+            .addClass('btn btn-danger table-button')
+            .text('Delete');
+
+          appTable.append($("<tr></tr>")
+            .append($("<td></td>")
+              .append($("<a></a>").attr('href', "application.html?name=" + encodeURIComponent(app)).text(app)))
+            .append($("<td></td>")
+              .append(button)));
+
+          button.click(function (e) {
+            e.preventDefault();
+            $.ajax({
+              type: 'POST',
+              dataType: 'html',
+              url: "dashboards",
+              data: {
+                cmd: 'delete_application',
+                application_name: app,
+                name: name
+              },
+              success: reload
+            });
+          })
+
+        })
+
+      }
+    })
+  }
+  function reload() {
+
+    reloadExecutions();
+    reloadConfiguration();
+
+  }
+
+  reload();
+  setInterval(reloadExecutions, 60000);
+
+
+</script>

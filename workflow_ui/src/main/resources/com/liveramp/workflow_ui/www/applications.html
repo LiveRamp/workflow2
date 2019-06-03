@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <title>Active Workflows</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
+  <link rel="stylesheet" type="text/css" href="css/c3-0.4.10.min.css">
+  <link rel="stylesheet" type="text/css" href="css/tablesorter-style.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.min.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/uri.min.js"></script>
+  <script type="text/javascript" src="resources/bootbox.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+  <script type="text/javascript" src="resources/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/c3-0.4.10.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.tablesorter.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/step_tree.js"></script>
+  <script type="text/javascript" src="js/cost_tab.js"></script>
+  <script type="text/javascript" src="js/trend_tab.js"></script>
+
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<script>
+  configureNavbar($("#navbar"))
+</script>
+<div class="container-fluid service-container">
+  <h4>Applications</h4>
+
+  <table class="table">
+
+    <thead>
+    <tr>
+      <th>Name</th>
+      <th>App Type</th>
+    </tr>
+    </thead>
+
+    <tbody id="applications">
+    </tbody>
+
+  </table>
+
+</div>
+</body>
+
+<script>
+
+  $.ajax({
+    type: 'GET',
+    dataType: 'html',
+    url: 'applications',
+    data: {},
+    success: function (dataStr) {
+
+      var sortedApps = _.sortBy(JSON.parse(dataStr).applications, function (application) {
+        return application.name;
+      });
+
+      var applications = $("#applications");
+      sortedApps.forEach(function(application){
+        applications.append($('<tr><td><a href="application.html?name=' + encodeURIComponent(application.name) + '">'+application.name+'</a></td><td>'+application.app_type+'</td></tr>'));
+      });
+
+    }
+  });
+
+</script>
+
+</html>

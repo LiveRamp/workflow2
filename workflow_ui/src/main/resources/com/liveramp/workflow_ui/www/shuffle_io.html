@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <meta charset="UTF-8">
+  <title>Shuffle IO</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
+  <link rel="stylesheet" type="text/css" href="css/c3-0.4.10.min.css">
+  <link rel="stylesheet" type="text/css" href="css/tablesorter-style.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.min.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/uri.min.js"></script>
+  <script type="text/javascript" src="resources/bootbox.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+  <script type="text/javascript" src="resources/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/c3-0.4.10.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.tablesorter.min.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/application_comparison.js"></script>
+
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<div id="contents"></div>
+
+<script>
+  configureNavbar($("#navbar"))
+</script>
+
+<script>
+
+  var WRITE_BYTES = 'org.apache.hadoop.mapreduce.FileSystemCounter.FILE_BYTES_WRITTEN';
+  var READ_BYTES = 'org.apache.hadoop.mapreduce.FileSystemCounter.FILE_BYTES_READ';
+
+  var ioStats = [
+
+    {
+      name: 'readBytes',
+      absDisplay: 'Read Bytes',
+      relDisplay: 'Read Bytes',
+      calc: function (appData) {
+        if (appData.counters[READ_BYTES]) {
+          return appData.counters[READ_BYTES];
+        }
+        return 0;
+      },
+      relFormat: identity,
+      relSorter: 'float',
+      absCell: makeIdentityCell,
+      absSorter: 'float'
+    },
+
+    {
+      name: 'writeBytes',
+      absDisplay: 'Write Bytes',
+      relDisplay: 'Write Bytes',
+      calc: function (appData) {
+        if (appData.counters[WRITE_BYTES]) {
+          return appData.counters[WRITE_BYTES];
+        }
+        return 0;
+      },
+      relFormat: identity,
+      relSorter: 'float',
+      absCell: makeIdentityCell,
+      absSorter: 'float'
+    }
+  ];
+
+  $(function () {
+    $("#contents").load("application_comparison.html", function () {
+      renderComparison(ioStats, 'shuffle_io');
+    });
+  });
+
+</script>
+
+</body>

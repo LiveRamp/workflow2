@@ -1,0 +1,16 @@
+p.infra {
+    color: red;
+    margin: 0 !important;
+}
+p.not_infra {
+    color: green;
+    margin: 0 !important;
+}
+tr.infra_row {
+    background: #ebcccc;
+    fill: #ebcccc;
+}
+tr.task_row {
+    background: #ffdcdd;
+    fill: #d0e9c6;
+}

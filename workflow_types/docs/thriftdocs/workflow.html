@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link href="style.css" rel="stylesheet" type="text/css"/>
+<title>Thrift module: workflow</title></head><body>
+<aside><ul>
+<a href="/pages/MasterRepos/workflow/thriftdocs/test.html">test</a><br>
+workflow<br>
+</ul></aside>
+<div class="content">
+
+<div class="container-fluid">
+<h1>Thrift module: workflow</h1>
+<table class="table-bordered table-striped table-condensed"><thead><th>Module</th><th>Services</th><th>Data types</th><th>Constants</th></thead>
+<tr>
+<td>workflow</td><td></td>
+<td><a href="#Enum_ExecutorStatus">ExecutorStatus</a><br/>
+<a href="#Enum_StepStatus">StepStatus</a><br/>
+<a href="#Enum_WorkflowAttemptStatus">WorkflowAttemptStatus</a><br/>
+<a href="#Enum_WorkflowExecutionStatus">WorkflowExecutionStatus</a><br/>
+</td>
+<td></code></td>
+</tr></table>
+<hr/><h2 id="Enumerations">Enumerations</h2>
+<div class="definition"><h3 id="Enum_WorkflowExecutionStatus">Enumeration: WorkflowExecutionStatus</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>INCOMPLETE</code></td><td><code>0</code></td><td>
+</td></tr>
+<tr><td><code>COMPLETE</code></td><td><code>1</code></td><td>
+</td></tr>
+<tr><td><code>CANCELLED</code></td><td><code>2</code></td><td>
+</td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_WorkflowAttemptStatus">Enumeration: WorkflowAttemptStatus</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>RUNNING</code></td><td><code>0</code></td><td>
+</td></tr>
+<tr><td><code>FAIL_PENDING</code></td><td><code>1</code></td><td>
+</td></tr>
+<tr><td><code>SHUTDOWN_PENDING</code></td><td><code>2</code></td><td>
+</td></tr>
+<tr><td><code>FAILED</code></td><td><code>3</code></td><td>
+</td></tr>
+<tr><td><code>FINISHED</code></td><td><code>4</code></td><td>
+</td></tr>
+<tr><td><code>SHUTDOWN</code></td><td><code>5</code></td><td>
+</td></tr>
+<tr><td><code>INITIALIZING</code></td><td><code>6</code></td><td>
+</td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_StepStatus">Enumeration: StepStatus</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>WAITING</code></td><td><code>0</code></td><td>
+</td></tr>
+<tr><td><code>RUNNING</code></td><td><code>1</code></td><td>
+</td></tr>
+<tr><td><code>COMPLETED</code></td><td><code>2</code></td><td>
+</td></tr>
+<tr><td><code>FAILED</code></td><td><code>3</code></td><td>
+</td></tr>
+<tr><td><code>SKIPPED</code></td><td><code>4</code></td><td>
+</td></tr>
+<tr><td><code>REVERTED</code></td><td><code>5</code></td><td>
+</td></tr>
+<tr><td><code>MANUALLY_COMPLETED</code></td><td><code>6</code></td><td>
+</td></tr>
+<tr><td><code>ROLLING_BACK</code></td><td><code>7</code></td><td>
+</td></tr>
+<tr><td><code>ROLLED_BACK</code></td><td><code>8</code></td><td>
+</td></tr>
+<tr><td><code>ROLLBACK_FAILED</code></td><td><code>9</code></td><td>
+</td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_ExecutorStatus">Enumeration: ExecutorStatus</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>RUNNING</code></td><td><code>0</code></td><td>
+</td></tr>
+<tr><td><code>STOPPED</code></td><td><code>1</code></td><td>
+</td></tr>
+</table></div>
+</div></div></body></html>

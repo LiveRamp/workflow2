@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <title>Workflows</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.min.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<script>
+  configureNavbar($("#navbar"))
+</script>
+
+
+<div class="container-fluid service-container">
+  <h3>Pools</h3>
+
+  <div class="row" id="pool-container">
+
+  </div>
+</div>
+
+<script>
+
+  var runningList = [];
+
+  function redraw() {
+
+    var groups = _.groupBy(runningList, function (workflow) {
+      return workflow.attempts[0].pool;
+    });
+
+    console.log(groups);
+
+    var parent = $("#pool-container");
+    parent.empty();
+
+    for (var pool in groups) {
+
+      var body = $("<tbody></tbody>");
+
+      parent.append($("<div>")
+          .append($("<div class='panel-heading'><h4>"+pool+"</h4></div>"))
+          .append($("<table class='table'></table>")
+              .append($("<thead></thead>")
+                  .append($("<tr></tr>")
+                      .append($("<th>Name</th>"))
+                      .append($("<th>Status</th>"))
+                      .append($("<th>Started</th>"))
+                      .append($("<th>Ended</th>"))
+                      .append($("<th>Status</th>"))
+                      .append($("<th>Host</th>"))
+                      .append($("<th>User</th>"))
+                      .append($("<th>Dir</th>"))
+                      .append($("<th>Jar</th>"))
+                      .append($("<th>Commit</th>"))
+                      .append($("<th>Execution</th>"))))
+              .append(body)));
+
+      populateExecutions(groups[pool], body);
+    }
+
+  }
+
+  function refreshTable() {
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: "executions",
+      data: {
+        status: "INCOMPLETE",
+        process_status: "ALIVE",
+        limit: 1000
+      },
+      success: function (dataStr) {
+        runningList = JSON.parse(dataStr).values;
+        redraw();
+      }
+    });
+
+  }
+
+  refreshTable();
+  setInterval(refreshTable, 60000);
+
+</script>

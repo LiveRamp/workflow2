@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd /apps/workflow_monitor/current
+java -cp workflow_monitor.job.jar com.liveramp.workflow_monitor.alerts.execution.alerts.DailyAlertPercentagesAlerter

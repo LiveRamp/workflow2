@@ -1,0 +1,5 @@
+--- 
+dummy:
+  dummy: missing belongs_to association 
+mapreduce_job_task_exceptions:
+ task_attempt_id: missing belongs_to association

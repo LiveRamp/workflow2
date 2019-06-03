@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <meta charset="UTF-8">
+  <title>NameNode Load</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
+  <link rel="stylesheet" type="text/css" href="css/c3-0.4.10.min.css">
+  <link rel="stylesheet" type="text/css" href="css/tablesorter-style.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.min.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/uri.min.js"></script>
+  <script type="text/javascript" src="resources/bootbox.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+  <script type="text/javascript" src="resources/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="resources/c3-0.4.10.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.tablesorter.min.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/application_comparison.js"></script>
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<div id="contents"></div>
+
+<script>
+  configureNavbar($("#navbar"))
+</script>
+
+<script>
+
+  var READ_OPS = 'org.apache.hadoop.mapreduce.FileSystemCounter.HDFS_READ_OPS';
+  var WRITE_OPS = 'org.apache.hadoop.mapreduce.FileSystemCounter.HDFS_WRITE_OPS';
+  var LARGE_READ_OPS = 'org.apache.hadoop.mapreduce.FileSystemCounter.HDFS_LARGE_READ_OPS';
+
+  var namenodeStats = [
+
+    {
+      name: 'readOps',
+      absDisplay: 'Read Ops',
+      relDisplay: 'Read Ops',
+      calc: function (appData) {
+        if (appData.counters[READ_OPS]) {
+          return appData.counters[READ_OPS];
+        }
+        return 0;
+      },
+      relFormat: identity,
+      relSorter: 'float',
+      absCell: makeIdentityCell,
+      absSorter: 'float'
+    },
+
+    {
+      name: 'writeOps',
+      absDisplay: 'Write Ops',
+      relDisplay: 'Write Ops',
+      calc: function (appData) {
+        if (appData.counters[WRITE_OPS]) {
+          return appData.counters[WRITE_OPS];
+        }
+        return 0;
+      },
+      relFormat: identity,
+      relSorter: 'float',
+      absCell: makeIdentityCell,
+      absSorter: 'float'
+    },
+
+    {
+      name: 'largeReadOps',
+      absDisplay: 'Large Read Ops',
+      relDisplay: 'Large Read Ops',
+      calc: function (appData) {
+        if (appData.counters[LARGE_READ_OPS]) {
+          return appData.counters[LARGE_READ_OPS];
+        }
+        return 0;
+      },
+      relFormat: identity,
+      relSorter: 'float',
+      absCell: makeIdentityCell,
+      absSorter: 'float'
+    }
+
+  ];
+
+  $(function () {
+    $("#contents").load("application_comparison.html", function () {
+      renderComparison(namenodeStats, 'namenode_usage');
+    });
+  });
+
+</script>
+
+</body>

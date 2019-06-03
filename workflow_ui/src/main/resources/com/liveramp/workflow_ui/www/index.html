@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <title>Home</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
+  <link rel="stylesheet" type="text/css" href="css/c3-0.4.10.min.css">
+  <link rel="stylesheet" type="text/css" href="css/tablesorter-style.css">
+  <link rel="stylesheet" type="text/css" href="css/boostrap-dialog.min.css">
+  <link rel="stylesheet" type="text/css" href="css/select2.min.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/uri.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+  <script type="text/javascript" src="resources/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/c3-0.4.10.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.tablesorter.js"></script>
+  <script type="text/javascript" src="resources/bootstrap-dialog.min.js"></script>
+  <script type="text/javascript" src="resources/d3-tip.js"></script>
+  <script type="text/javascript" src="resources/select2.full.min.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/step_tree.js"></script>
+  <script type="text/javascript" src="js/cost_tab.js"></script>
+  <script type="text/javascript" src="js/trend_tab.js"></script>
+  <script type="text/javascript" src="js/app_cost_history_tab.js"></script>
+  <script type="text/javascript" src="js/alerts_tab.js"></script>
+  <script type="text/javascript" src="js/gantt-chart.js"></script>
+
+
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<script>
+  configureNavbar($("#navbar"))
+</script>
+
+<div class="service-container">
+  <h3><b id="dashboard-name"></b></h3>
+
+  <div class="tabbable"> <!-- Only required for left/right tabs -->
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#dashboards" data-toggle="tab">Dashboards</a></li>
+      <li><a href="#configure" data-toggle="tab">Configure</a></li>
+    </ul>
+
+    <div class="tab-content">
+
+      <div class="active tab-pane" id="dashboards">
+
+        <table class="table">
+          <thead>
+          </thead>
+          <tbody id="dashboard-status">
+          </tbody>
+        </table>
+
+      </div>
+
+      <div class="tab-pane" id="configure">
+
+        <div class="container-fluid service-container">
+
+          <br>
+          <button type="button" id="add-dashboard" class="btn btn-success">Add Dashboard</button>
+
+          <table class="table">
+            <thead>
+            <tr>
+              <th>Dashboard</th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody id="dashboard-configure">
+            </tbody>
+          </table>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
+
+
+<script>
+
+  //  hackity hack https://stackoverflow.com/questions/13649459/twitter-bootstrap-multiple-modal-error/15856139#15856139
+  $.fn.modal.Constructor.prototype.enforceFocus = function () {
+  };
+
+  $("#add-dashboard").click(function (e) {
+    e.preventDefault();
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      data: {
+        cmd: 'get_config'
+      },
+      url: 'dashboards',
+      success: function (data) {
+        var dashboards = JSON.parse(data).dashboards;
+
+        var opts = $("<select class='wide-select' id='dashboard-select' multiple='multiple'></select>");
+
+        //  TODO filter for stuff which isn't added already.
+        dashboards.forEach(function (dash) {
+          opts.append($("<option></option>").attr('value', dash.name).text(dash.name))
+        });
+
+        BootstrapDialog.show({
+          title: 'Add Dashboard',
+          message: opts,
+          onshown: function () {
+            $("#dashboard-select").select2({
+              dropdownParent: $('.modal-dialog')
+            });
+          },
+          buttons: [
+            cancelButton(),
+            submitButton(function (dialog) {
+                var dashes = $("#dashboard-select").val();
+                dialog.close();
+
+                dashes.forEach(function (dash) {
+                  $.ajax({
+                    type: 'POST',
+                    data: {
+                      cmd: 'add_dashboard',
+                      dashboard_name: dash
+                    },
+                    url: "user",
+                    success: reload
+                  })
+                });
+
+              }
+            )
+          ]
+        })
+      }
+
+    });
+
+  });
+
+  function reload() {
+
+
+    var dashConfigTable = $("#dashboard-configure");
+    var dashStatusTable = $("#dashboard-status");
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      data: {
+        name: name
+      },
+      url: "user",
+      success: function (data) {
+        var userConfig = JSON.parse(data);
+
+        dashConfigTable.empty();
+        dashStatusTable.empty();
+
+        userConfig.dashboards.forEach(function (dash) {
+
+          var button = $("<button></button>")
+            .attr('type', 'button')
+            .addClass('btn btn-danger table-button')
+            .text('Delete');
+
+          dashConfigTable.append($("<tr></tr>")
+            .append($("<td></td>")
+              .append(getDashURL(dash.name)))
+            .append($("<td></td>")
+              .append(button)));
+
+          var statusHolder = $("<td></td>")
+            .append($('<button class="btn btn-static" type="button"><span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span></button>'));
+
+          dashStatusTable.append($("<tr></tr>")
+            .append($("<td></td>")
+              .append(getDashURL(dash.name)))
+            .append(statusHolder));
+
+          button.click(function (e) {
+            e.preventDefault();
+            $.ajax({
+              type: 'POST',
+              dataType: 'html',
+              url: "user",
+              data: {
+                cmd: 'remove_dashboard',
+                dashboard_name: dash.name,
+              },
+              success: reload
+            });
+          });
+
+          $.ajax({
+            type: 'GET',
+            dataType: 'html',
+            url: 'dashboards',
+            data: {
+              cmd: 'get_status',
+              name: dash.name
+            },
+            success: function (raw) {
+              var data = JSON.parse(raw).statuses;
+
+              var running = data["RUNNING"];
+              var fail = data["FAILED"] + data["FAIL_PENDING"];
+              var finished = data["FINISHED"];
+              var shutdown = data["SHUTDOWN"] + data["SHUTDOWN_PENDING"];
+              var initializing = data["INITIALIZING"];
+
+              statusHolder.empty();
+
+              if (running !== 0) {
+                statusHolder.append(makeButton('btn-primary', running))
+              }
+              if (finished !== 0) {
+                statusHolder.append(makeButton('btn-success', finished))
+              }
+              if (fail !== 0) {
+                statusHolder.append(makeButton('btn-danger', fail))
+              }
+              if (shutdown !== 0) {
+                statusHolder.append(makeButton('btn-warning', shutdown))
+              }
+              if (initializing !== 0) {
+                statusHolder.append(makeButton('btn-default', initializing))
+              }
+            }
+          });
+        })
+      }
+    })
+  }
+
+  function makeButton(withClass, withText) {
+    return $("<button></button>")
+      .addClass("btn btn-static " + withClass)
+      .attr('type', 'button')
+      .text(withText)
+  }
+
+
+  reload()
+
+</script>

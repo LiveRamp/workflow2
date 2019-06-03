@@ -1,0 +1,519 @@
+
+table .workflow_step_row.waiting {
+    background: #ffffff;
+}
+
+table .workflow_step_row.running {
+    background: #c4e3f3;
+}
+
+table .workflow_step_row.completed {
+    background: #d0e9c6;
+}
+
+table .workflow_step_row.manually_completed {
+    background: #96aa92;
+}
+
+table .workflow_step_row.failed {
+    background: #ebcccc;
+}
+
+table .workflow_step_row.skipped {
+    background: #f2ff8a;
+}
+
+table .workflow_step_row.reverted {
+    background: #b2b2b2;
+}
+
+table .workflow_step_row.rolled_back {
+    background: #b2b2b2;
+}
+
+table .workflow_step_row.rolling_back {
+    background: #b28144;
+}
+
+table .workflow_step_row.rollback_failed {
+    background: #e69687;
+}
+
+/* running, failPending, shutdownPending all will show as clear for now*/
+
+.alert_row.OK {
+    background: #d0e9c6;
+    fill: #d0e9c6;
+}
+
+.alert_row.WARN {
+    background: #faf2cc;
+    fill: #faf2cc;
+}
+
+.alert_row.ERROR {
+    background: #ebcccc;
+    fill: #ebcccc;
+}
+
+.workflow_row.COMPLETE {
+    background: #d0e9c6;
+    fill: #d0e9c6;
+}
+
+.workflow_row.CANCELLED {
+    background: #b2b2b2;
+    fill: #b2b2b2;
+}
+
+.workflow_row.FAILED {
+    background: #ebcccc;
+    fill: #ebcccc;
+}
+
+.workflow_row.DIED_UNCLEAN {
+    background: #ebcccc;
+    fill: #ebcccc;
+}
+
+.workflow_row.FINISHED {
+    background: #d0e9c6;
+    fill: #d0e9c6;
+}
+
+.workflow_row.SHUTDOWN {
+    background: #faf2cc;
+    fill: #faf2cc;
+}
+
+.workflow_row.RUNNING {
+    background: #c4e3f3;
+    fill: #c4e3f3;
+}
+
+.workflow_row.SHUTDOWN_PENDING {
+    background: #f2ff8a;
+    fill: #f2ff8a;
+}
+
+.workflow_row.FAIL_PENDING {
+    background: #ebcccc;
+    fill: #ebcccc;
+}
+
+.step-skipped > rect {
+    fill: #f2ff8a;
+}
+
+.step-completed > rect {
+    fill: #d0e9c6;
+}
+
+.step-manually_completed > rect {
+    fill: #96aa92;
+}
+
+.step-running > rect {
+    fill: #c4e3f3;
+}
+
+.step-waiting > rect {
+    fill: #ffffff;
+}
+
+.step-failed > rect {
+    fill: #ebcccc;
+}
+
+.step-reverted > rect {
+    fill: #b2b2b2;
+}
+
+.step-failing > rect {
+    fill: #eb4e00;
+}
+
+.step-rolled_back > rect {
+    fill: #b2b2b2;
+}
+
+.step-rolling_back > rect {
+    fill: #b28144;
+}
+
+.step-rollback_failed > rect {
+    fill: #e69687;
+}
+
+.main-svg {
+    width: 100%;
+    border: 1px solid #999;
+}
+
+.pipeline-svg {
+    width: 100%;
+    border: 1px solid #999;
+}
+
+textarea {
+    border: 1px solid #999999;
+    width: 100%;
+    margin: 5px 0;
+    padding: 3px;
+}
+
+text {
+    font-weight: 300;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+}
+
+.datastore > rect {
+    fill: #bc6bc1;
+}
+
+.step-terminal > rect {
+    stroke-width: 2px;
+    stroke: #333;
+}
+
+.step-multistep {
+    cursor: pointer;
+}
+
+.step-multistep > rect {
+    stroke-width: 3px;
+    stroke: #00137d;
+}
+
+.edgeLabel rect {
+    fill: #fff;
+}
+
+.edgePath path {
+    stroke: #333;
+    stroke-width: 1.5px;
+}
+
+.depEdge path {
+    stroke: #333;
+    stroke-width: 1.5px;
+}
+
+.app-edge path {
+    fill: #333;
+}
+
+.dsEdge path {
+    stroke: #333;
+    stroke-width: 1.5px;
+}
+
+.selectedEdge path {
+    stroke: #003baf;
+    stroke-width: 3.0px;
+}
+
+#reason-input {
+    width: 400px;
+}
+
+.btn.active, .btn:active {
+    background-color: #000630;
+}
+
+.hiddenRow {
+    padding: 0 !important;
+}
+
+#step-table {
+    border-collapse: collapse;
+}
+
+.collapsed-box {
+    display: none
+}
+
+.row_with_info {
+    cursor: pointer;
+}
+
+.info-div {
+    padding-left: 25px;
+    white-space: pre-wrap;
+}
+
+.tree-node {
+    stroke: #eee;
+    fill: #aaa;
+    cursor: pointer;
+}
+
+.tree-node.parent {
+    fill: #457cc7;
+}
+
+.step-label.parent {
+    cursor: pointer;
+    background-color: #457cc7;
+}
+
+.step-label.child {
+    cursor: pointer;
+    background-color: #aaa;
+}
+
+text {
+    pointer-events: none;
+}
+
+.tree-link {
+    color: #0000b3;
+}
+
+.alignleft {
+    float: left;
+}
+
+.alignright {
+    padding-top: 10px;
+    float: right;
+}
+
+.negative {
+    background-color: #d0e9c6;
+}
+
+.positive {
+    background-color: #ebcccc;
+}
+
+.neutral {
+    background-color: #b2b2b2;
+}
+
+.fixed-width-table {
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+
+.trend-chart:hover {
+    cursor: pointer;
+    background-color: #c5ecff;
+}
+
+.graph-div {
+    height: 60vh;
+}
+
+.pipeline-div {
+    height: 90vh;
+}
+
+.modal-backdrop {
+    z-index: -1;
+}
+
+.app-node {
+    cursor: pointer;
+    stroke: rgb(51, 51, 51);
+    stroke-width: 2px;
+}
+
+.app-label {
+    color: #000000;
+}
+
+.legend {
+    text-align: center;
+}
+
+.legend-element {
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+.team0 {
+    fill: #aaa;
+}
+
+.team0-legend {
+    background: #aaa;
+}
+
+.team1 {
+    fill: #d35aff;
+}
+
+.team1-legend {
+    background: #d35aff;
+}
+
+.team2 {
+    fill: #59d6ff;
+}
+
+.team2-legend {
+    background: #59d6ff;
+}
+
+.team3 {
+    fill: #00aa5d;
+}
+
+.team3-legend {
+    background: #00aa5d;
+}
+
+.team4 {
+    fill: #aa004f;
+}
+
+.team4-legend {
+    background: #aa004f;
+}
+
+.team5 {
+    fill: #a9aa00;
+}
+
+.team5-legend {
+    background: #a9aa00;
+}
+
+.team5 {
+    fill: #005be4;
+}
+
+.team5-legend {
+    background: #005be4;
+}
+
+.team6 {
+    fill: #e4549a;
+}
+
+.team6-legend {
+    background: #e4549a;
+}
+
+.team7 {
+    fill: #87e490;
+}
+
+.team7-legend {
+    background: #87e490;
+}
+
+.team8 {
+    fill: #e44600;
+}
+
+.team8-legend {
+    background: #e44600;
+}
+
+.app-link {
+    color: rgb(51, 51, 51);
+    text-decoration: none;
+}
+
+.attempt-gantt {
+    width: 100%;
+}
+
+.axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.gantt-element {
+    cursor: pointer;
+}
+
+.d3-tip {
+    line-height: 1;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+}
+
+.service-container {
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+#user-menu {
+    color: #0200e9
+}
+
+.user-menu {
+    margin: 0 5px;
+}
+
+.table-button {
+    float: right;
+}
+
+.wide-select {
+    width: 100% !important;
+    padding: 0;
+}
+
+.btn-static {
+    cursor: default;
+    border: 1px solid lightgrey;
+}
+
+.btn-static:active {
+    -moz-box-shadow: inset 0 0 0px white;
+    -webkit-box-shadow: inset 0 0 0px white;
+    box-shadow: inset 0 0 0px white;
+}
+
+/*
+    This is horrible but it's the most infuriating thing I've ever done, so whatever.
+ */
+.center-div {
+    display: block !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
+    margin: 0 auto !important;
+    float: none !important
+}
+
+.loader {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.title-row {
+    padding-left: 8px;
+}
+
+.hadoop {
+    border-radius: 10px;
+    max-width: 180px;
+    max-height: 113px;
+    border: 1px solid #bfbfbf; /* Light grey */
+}
+
+.page-title {
+    vertical-align: middle;
+    display: inline-block
+}

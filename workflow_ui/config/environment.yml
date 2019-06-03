@@ -1,0 +1,2 @@
+workflow_db: workflow_db_test
+workflow_ui_jetty_db: workflow_ui_jetty_db_test

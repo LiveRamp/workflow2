@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <title>Active Workflows</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
+  <link rel="stylesheet" type="text/css" href="css/c3-0.4.10.min.css">
+  <link rel="stylesheet" type="text/css" href="css/tablesorter-style.css">
+  <link rel="stylesheet" type="text/css" href="css/boostrap-dialog.min.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/uri.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+  <script type="text/javascript" src="resources/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/c3-0.4.10.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.tablesorter.js"></script>
+  <script type="text/javascript" src="resources/bootstrap-dialog.min.js"></script>
+  <script type="text/javascript" src="resources/d3-tip.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/step_tree.js"></script>
+  <script type="text/javascript" src="js/cost_tab.js"></script>
+  <script type="text/javascript" src="js/trend_tab.js"></script>
+  <script type="text/javascript" src="js/app_cost_history_tab.js"></script>
+  <script type="text/javascript" src="js/alerts_tab.js"></script>
+  <script type="text/javascript" src="js/gantt-chart.js"></script>
+
+
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<script>
+  configureNavbar($("#navbar"))
+</script>
+<div class="service-container">
+  <h3>Workflow <b id="workflow-name"></b></h3>
+
+  <div id="scope-div"><h3>Scope <b id="scope-name"></b></h3></div>
+  <br>
+
+  <p>
+    From:
+    <label for="start-date"></label>
+    <input type="text" id="start-date" readonly='true'>
+    Until:
+    <label for="end-date"></label>
+    <input type="text" id="end-date" readonly='true'>
+    Limit:
+    <input class="input" type="text" id="limit" placeholder="Limit">
+    <button class="btn btn-primary" id="update-button" type="button">Update</button>
+  </p>
+
+  <div class="tabbable"> <!-- Only required for left/right tabs -->
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#executions-tab" data-toggle="tab">Executions</a></li>
+      <li><a href="#uptime" data-toggle="tab">Uptime</a></li>
+      <li><a href="#trends" data-toggle="tab">Trends</a></li>
+      <li><a href="#steps" data-toggle="tab">Steps</a></li>
+      <li><a href="#cost-tab" data-toggle="tab">Instance cost</a></li>
+      <li><a href="#cost-history-tab" data-toggle="tab">Cost history</a></li>
+      <li><a href="#notification-tab" data-toggle="tab">Notifications</a></li>
+      <li><a href="#alerts-tab" data-toggle="tab">Alerts</a></li>
+    </ul>
+
+    <div class="alert alert-warning" id="truncation-warning" style="display: none;">
+      Results are limited to the most recent <span id="truncation-limit"></span> executions. Narrow date ranges to
+      get
+      full results.
+    </div>
+
+    <div class="tab-content">
+      <div class="tab-pane active" id="executions-tab">
+        <div class="table-responsive">
+          <table class="table">
+
+            <thead>
+            <tr>
+              <th>Name</th>
+              <th>Scope</th>
+              <th>Started</th>
+              <th>Ended</th>
+              <th>Status</th>
+              <th>Host</th>
+              <th>User</th>
+              <th>Dir</th>
+              <th>Jar</th>
+              <th>Commit</th>
+              <th>Execution</th>
+            </tr>
+            </thead>
+
+            <tbody id="executions">
+            </tbody>
+
+          </table>
+        </div>
+
+      </div>
+
+      <div class="tab-pane" id="uptime">
+        <div id="uptime-chart-container"></div>
+      </div>
+
+      <div class="tab-pane" id="trends">
+        <div id="collapsed_graph_holder"></div>
+        <div id="expanded_graph_holder"></div>
+      </div>
+      <div class="tab-pane" id="steps">
+        <div id="expanded-step-body"></div>
+        <div id="collapsed-step-body"></div>
+      </div>
+      <div class="tab-pane" id="cost-tab">
+        <div id="cost_graph_holder">
+          <h4>Cost</h4>
+
+          <div id="cost-graph"></div>
+        </div>
+        <table class="table tablesorter table-striped">
+          <thead>
+          <tr>
+            <th id="exid">Execution Id</th>
+            <th id="start">Start time</th>
+            <th id="duration">Duration</th>
+            <th id="cost">Estimated Cost</th>
+          </tr>
+          </thead>
+          <tbody id="cost-table"></tbody>
+        </table>
+      </div>
+      <div class="tab-pane" id="cost-history-tab">
+        <div id="cost_history_graph_holder">
+          <h4>Application Cost History</h4>
+          <div id="cost-history-graph"></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="notification-tab">
+        <h3>Notifications</h3>
+        <table class="table">
+          <thead>
+          <tr>
+            <th>Email</th>
+            <th>Notifications</th>
+            <th>Action</th>
+          </tr>
+          </thead>
+          <tbody id="notifications">
+          </tbody>
+        </table>
+        <button type="button" id="add-notification" class="btn btn-success">Add</button>
+      </div>
+      <div class="tab-pane" id="alerts-tab">
+        <h3>Alerts</h3>
+        <h5>
+          <div class="alert alert-warning" id="truncation-warning">
+            Date range truncated to < 24 hours.
+          </div>
+        </h5>
+        <table class="table tablesorter table-striped">
+          <thead>
+          <tr>
+            <th>Step Name</th>
+            <th>Alert Name</th>
+            <th>Alert Count</th>
+            <th>Alerts per MapReduce Job</th>
+          </tr>
+          </thead>
+          <tbody id="alerts-table"></tbody>
+        </table>
+
+        <h3>Alert Descriptions</h3>
+        <table class="table tablesorter table-striped">
+          <thead>
+            <tr>
+              <th>Alert Name</th>
+              <th>Alert Description</th>
+            </tr>
+          </thead>
+          <tbody id="alert-descriptions-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  var $limit = $("#limit");
+  var $update = $("#update-button");
+
+  var $expanded_chart_holder = $("#collapsed_graph_holder");
+  var $collapsed_chart_holder = $("#expanded_graph_holder");
+
+  var $expanded_step_body = $("#expanded-step-body");
+  var $collapsed_step_body = $("#collapsed-step-body");
+
+  var $cost_table = $('#cost-table');
+
+  var $alerts_table = $('#alerts-table');
+  var $alert_descriptions_table = $('#alert-descriptions-table');
+
+  var counter_data = {};
+
+  //  this code is dark magic from stack overflow
+
+  // Javascript to enable link to tab
+  var hash = document.location.hash;
+  var prefix = "tab_";
+  if (hash) {
+    $('.nav-tabs a[href=' + hash.replace(prefix, "") + ']').tab('show');
+  }
+
+  $(document).ready(function () {
+    // add a hash to the URL when the user clicks on a tab
+    $('a[data-toggle="tab"]').on('click', function (e) {
+      history.pushState(null, null, $(this).attr('href'));
+    });
+    // navigate to a tab when the history changes
+    window.addEventListener("popstate", function (e) {
+      var activeTab = $('[href=' + location.hash + ']');
+      if (activeTab.length) {
+        activeTab.tab('show');
+      } else {
+        $('.nav-tabs a:first').tab('show');
+      }
+    });
+  });
+
+  var params = getURLParams();
+  var nameBlock = $("#workflow-name");
+  var scopeBlock = $("#scope-name");
+  var scopeDiv = $("#scope-div");
+
+  if (params.step_id) {
+    nameBlock.text(params.name + " (step: " + params.step_id + ")");
+  } else {
+    nameBlock.text(params.name);
+  }
+
+  if (params.scope_identifier) {
+    scopeDiv.show();
+    scopeBlock.text(params.scope_identifier);
+  } else {
+    scopeDiv.hide();
+  }
+
+  var start = $("#start-date");
+  start.datepicker();
+
+  var end = $("#end-date");
+  end.datepicker();
+
+  end.datepicker("setDate", new Date());
+  start.datepicker("setDate", moment().subtract(30, 'days').toDate());
+
+  $limit.val(100);
+
+  $update.click(function (e) {
+    e.preventDefault();
+    refreshTable();
+  });
+
+  var STOPPED_WINDOW = 7 * 24 * 60 * 60 * 1000; // week
+
+
+  //  get one day after end
+
+  function refreshTable() {
+
+    var executions = [];
+
+    function addExecutions(newExecutions) {
+
+      var sorted = _.sortBy(executions.concat(newExecutions), function (e) {
+        return e.attempts[0].id;
+      });
+
+      var unique = _.uniq(sorted, true, function (e) {
+        return e.attempts[0].id;
+      });
+
+
+      //  don't bother re-rendering if it's the same
+      if (unique.length != executions.length) {
+        executions = unique;
+        populateExecutions(executions, $('#executions'));
+        renderGantt("#uptime-chart-container", executions);
+      }
+
+    }
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: 'executions',
+      data: {
+        name: getURLParams().name,
+        scope_identifier: getURLParams().scope_identifier,
+        status: getURLParams().status || "INCOMPLETE",
+        process_status: "ALIVE",
+        host: getURLParams().host
+      },
+      success: function (dataStr) {
+        addExecutions(JSON.parse(dataStr).values);
+      }
+    });
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: "executions",
+      data: {
+        name: getURLParams().name,
+        scope_identifier: getURLParams().scope_identifier,
+        status: getURLParams().status || "INCOMPLETE",
+        started_after: moment().startOf('hour') - STOPPED_WINDOW,
+        host: getURLParams().host
+      },
+      success: function (dataStr) {
+        addExecutions(JSON.parse(dataStr).values)
+      }
+    });
+
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: 'executions',
+      data: function () {
+        var d = {
+          name: getURLParams().name,
+          scope_identifier: getURLParams().scope_identifier,
+          started_after: start.datepicker('getDate').getTime(),
+          started_before: moment(end.datepicker('getDate')).add(1, 'days').toDate().getTime(),
+          limit: $limit.val(),
+          host: getURLParams().host
+        };
+
+        if (getURLParams().status) d.status = getURLParams().status;
+
+        return d;
+      }(),
+      success: function (dataStr) {
+        var parse = JSON.parse(dataStr);
+        addExecutions(parse.values)
+
+        var $truncation = $("#truncation-warning");
+        if (parse.truncated) {
+          $("#truncation-limit").text(parse.limit);
+          $truncation.show();
+        } else {
+          $truncation.hide();
+        }
+
+      }
+    });
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: 'statistics',
+      data: {
+        name: params.name,
+        scope_identifier: params.scope_identifier,
+        step_id: params.step_id,
+        app_type: params.app_type,
+        started_after: start.datepicker('getDate').getTime(),
+        started_before: moment(end.datepicker('getDate')).add(1, 'days').toDate().getTime(),
+        limit: $limit.val()
+      },
+      success: function (dataStr) {
+        var data = JSON.parse(dataStr);
+
+        renderTrendTab($expanded_chart_holder, $collapsed_chart_holder, counter_data, data.executions, data.daily, data.render_info);
+        renderCostTab(data.executions, $cost_table, '#cost-graph');
+        renderStepTree($expanded_step_body, $collapsed_step_body, data.steps, data.render_info);
+
+      }
+    });
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: "app_cost_history",
+      data: {
+        name: getURLParams().name,
+        started_after: start.datepicker('getDate').getTime(),
+        started_before: moment(end.datepicker('getDate')).subtract(1, 'days').toDate().getTime()
+      },
+      success: function (dataStr) {
+        renderAppCostHistoryTab(JSON.parse(dataStr), '#cost-history-graph');
+      }
+    });
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: 'alerts',
+      data: {
+        name: getURLParams().name,
+        started_after: start.datepicker('getDate').getTime(),
+        started_before: moment(end.datepicker('getDate')).subtract(1, 'days').toDate().getTime()
+      },
+      success: function(dataStr) {
+        renderAlertsTab(JSON.parse(dataStr).list, $alerts_table, JSON.parse(dataStr).descriptions, $alert_descriptions_table)
+      }
+    });
+
+
+    function refreshNotifications() {
+      $.ajax({
+        type: 'GET',
+        dataType: 'html',
+        url: 'application',
+        data: {
+          name: params.name,
+          scope_identifier: params.scope_identifier
+        },
+        success: function (dataStr) {
+          var application = JSON.parse(dataStr);
+          var idData = {application_name: application.application.name};
+
+          var $notifications = $("#notifications");
+          $notifications.empty();
+
+          populateNotifications(application.configured_notifications,
+              $notifications,
+              idData,
+              refreshNotifications
+          );
+
+          configureAddNotification($("#add-notification"),
+              idData,
+              refreshNotifications
+          );
+
+        }
+
+      });
+    }
+
+    refreshNotifications();
+
+  }
+
+
+  refreshTable();
+
+
+  $('.tablesorter').tablesorter();
+
+</script>
+
+</body>
+
+</html>

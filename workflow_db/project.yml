@@ -1,0 +1,7 @@
+databases_namespace: com.liveramp.databases.workflow_db
+databases: 
+  -
+    root_namespace: com.liveramp.databases.workflow_db
+    db_name: WorkflowDb
+    schema_rb: database/db/schema.rb
+    models: database/app/models

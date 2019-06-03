@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <title>Dashboards</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
+  <link rel="stylesheet" type="text/css" href="css/c3-0.4.10.min.css">
+  <link rel="stylesheet" type="text/css" href="css/tablesorter-style.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.min.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/uri.min.js"></script>
+  <script type="text/javascript" src="resources/bootbox.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+  <script type="text/javascript" src="resources/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/c3-0.4.10.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.tablesorter.js"></script>
+  <script type="text/javascript" src="resources/bootstrap-dialog.min.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/step_tree.js"></script>
+  <script type="text/javascript" src="js/cost_tab.js"></script>
+  <script type="text/javascript" src="js/trend_tab.js"></script>
+
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<script>
+  configureNavbar($("#navbar"))
+</script>
+<div class="container-fluid service-container">
+  <h4>Dashboards</h4>
+
+  <button type="button" id="add-dashboard" class="btn btn-success">Create Dashboard</button>
+
+
+
+  <table class="table">
+
+    <thead>
+    <tr>
+      <th>Dashboard</th>
+      <th># Apps</th>
+      <th></th>
+    </tr>
+    </thead>
+
+    <tbody id="dashboards">
+    </tbody>
+
+  </table>
+
+</div>
+</body>
+
+<script>
+
+  $("#add-dashboard").click(function (e) {
+    e.preventDefault();
+
+    BootstrapDialog.show({
+      title: 'My New Dashboard',
+      message: $('<input class="form-control input-lg" id="dashboard-name" placeholder="Dashboard Name"/>'),
+      buttons: [
+        cancelButton(),
+        submitButton(function (dialog) {
+            var dashboard = $("#dashboard-name").val();
+            dialog.close();
+
+            if (dashboard) {
+              $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                data: {
+                  name: dashboard,
+                  cmd: 'create'
+                },
+                url: "dashboards",
+                success: refreshDashboards
+              })
+            }
+          }
+        )
+      ]
+    })
+
+  });
+
+  function refreshDashboards() {
+
+    var dashboards = $("#dashboards").empty();
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: 'dashboards',
+      data: {
+        cmd: 'get_config'
+      },
+      success: function (dataStr) {
+
+        var dashboardData = JSON.parse(dataStr).dashboards;
+
+        _.sortBy(dashboardData, function(e){
+          return e.name
+        }).forEach(function (dashboard) {
+          var name = dashboard.name;
+
+          var button = $("<button></button>")
+            .attr('type', 'button')
+            .addClass('btn btn-danger table-button')
+            .text('Delete');
+
+          button.click(function (event) {
+            event.preventDefault();
+
+            BootstrapDialog.show({
+              title: 'Confirm',
+              message: "Are you sure you want to delete dashboard " + name + "?  This cannot be undone.",
+              buttons: [
+                cancelButton(),
+                submitButton(function (dialog) {
+                    dialog.close();
+                    $.ajax({
+                      type: 'DELETE',
+                      dataType: 'html',
+                      url: "dashboards?name=" + name, //  TODO really rewrite restfully
+                      success: refreshDashboards
+                    });
+                  }
+                )
+              ]
+            })
+          });
+
+          dashboards.append($("<tr></tr>")
+            .append($("<td></td>").append($("<a></a>")
+              .attr('href', "dashboard.html?name="+encodeURIComponent(name))
+              .text(name)))
+            .append($("<td></td>").text(dashboard.applications.length))
+            .append($("<td></td>").append(button)));
+
+        });
+
+      }
+    });
+
+  }
+
+  refreshDashboards()
+
+</script>

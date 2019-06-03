@@ -1,0 +1,4 @@
+build
+databases/gems/*
+database/log/*.log
+databases/*/log/*.log

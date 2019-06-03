@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <title>Workflows</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.min.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<script>
+  configureNavbar($("#navbar"))
+</script>
+
+<div class="container-fluid service-container">
+  <div class="row">
+    <div class="panel panel-default">
+      <div class="panel-heading"><h4>Live</h4></div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Scope</th>
+            <th>Started</th>
+            <th>Ended</th>
+            <th>Status</th>
+            <th>Host</th>
+            <th>User</th>
+            <th>Dir</th>
+            <th>Jar</th>
+            <th>Commit</th>
+            <th>Execution</th>
+          </tr>
+          </thead>
+          <tbody id="live_attempts">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="panel panel-default" id="time_out_table">
+      <div class="panel-heading"><h4>Died Unclean</h4></div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Scope</th>
+            <th>Started</th>
+            <th>Ended</th>
+            <th>Status</th>
+            <th>Host</th>
+            <th>User</th>
+            <th>Dir</th>
+            <th>Jar</th>
+            <th>Commit</th>
+            <th>Execution</th>
+          </tr>
+          </thead>
+          <tbody id="timed_out_attempts">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="panel panel-default">
+      <div class="panel-heading"><h4>Stopped</h4></div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Scope</th>
+            <th>Started</th>
+            <th>Ended</th>
+            <th>Status</th>
+            <th>Host</th>
+            <th>User</th>
+            <th>Dir</th>
+            <th>Jar</th>
+            <th>Commit</th>
+            <th>Execution</th>
+          </tr>
+          </thead>
+          <tbody id="stopped_attempts">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  var recentList = [];
+  var runningList = [];
+  var stoppedList = [];
+
+  function refreshTable() {
+
+    //  everything which is still running
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: "executions",
+      data: {
+        status: "INCOMPLETE",
+        process_status: "ALIVE",
+        started_after: moment().startOf('hour') - RUNNING_WINDOW,
+        limit: 10000
+      },
+      success: function (dataStr) {
+        runningList = JSON.parse(dataStr).values;
+        redraw();
+      }
+    });
+
+    //  everything incomplete in the past week (include failed and died unclean)
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: "executions",
+      data: {
+        status: "INCOMPLETE",
+        started_after: moment().startOf('hour') - STOPPED_WINDOW,
+        limit: 10000
+      },
+      success: function (dataStr) {
+        stoppedList = JSON.parse(dataStr).values;
+        redraw();
+      }
+    });
+
+    //  everything else in the past day
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: "executions",
+      data: {
+        started_after: moment().startOf('hour') - ATTEMPT_WINDOW,
+        limit: 10000
+      },
+      success: function (dataStr) {
+        recentList = JSON.parse(dataStr).values;
+        redraw();
+      }
+    });
+
+  }
+
+  function redraw() {
+
+    var groups = _.groupBy(runningList.concat(recentList.concat(stoppedList)), function(e){
+      return e.attempts[0].process_status;
+    });
+
+    populateExecutions(groups.ALIVE, $("#live_attempts"));
+    populateExecutions(groups.TIMED_OUT, $("#timed_out_attempts"));
+    populateExecutions(groups.STOPPED, $("#stopped_attempts"));
+
+    if (groups.TIMED_OUT) {
+      $("#time_out_table").show();
+    } else {
+      $("#time_out_table").hide();
+    }
+
+  }
+
+  refreshTable();
+  setInterval(refreshTable, 60000);
+
+</script>

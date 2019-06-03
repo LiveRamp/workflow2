@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+  <root>
+    <priority value="ALL"/>
+    <appender-ref ref="CONSOLE"/>
+  </root>
+  <appender class="org.apache.log4j.ConsoleAppender" name="CONSOLE">
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d{ISO8601} %-5p %c{1} (%F:%M(%L)) - %m%n"/>
+    </layout>
+    <param name="Threshold" value="INFO"/>
+  </appender>
+</log4j:configuration>

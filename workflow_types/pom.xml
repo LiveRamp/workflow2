@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.liveramp.workflow2</groupId>
+    <artifactId>workflow</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>workflow_types</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <properties>
+    <thrift.version>thrift-0.11.0-patch-lr2</thrift.version>
+  </properties>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.apache.thrift</groupId>
+      <artifactId>libthrift</artifactId>
+      <version>0.11.0</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.thrift</groupId>
+        <artifactId>thrift-maven-plugin</artifactId>
+        <version>0.10.0</version>
+
+        <configuration>
+          <thriftExecutable>
+            ${project.basedir}/compiler/${thrift.architecture}/${thrift.version}
+          </thriftExecutable>
+        </configuration>
+
+        <executions>
+          <!--generate ruby sources-->
+          <execution>
+            <id>gen-rb</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <generator>rb</generator>
+              <outputDirectory>gen-rb</outputDirectory>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>gen-java</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <generator>java:private-members,nocamel,unsafe_binaries,generated_annotations=suppress</generator>
+              <outputDirectory>src/main/generated</outputDirectory>
+            </configuration>
+          </execution>
+
+        </executions>
+
+      </plugin>
+
+
+    </plugins>
+
+  </build>
+
+  <profiles>
+    <profile>
+      <id>linux</id>
+      <activation>
+        <os>
+          <name>Linux</name>
+          <family>unix</family>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <thrift.architecture>Linux_amd64</thrift.architecture>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>mac</id>
+      <activation>
+        <os>
+          <name>Mac OS X</name>
+          <family>unix</family>
+        </os>
+      </activation>
+      <properties>
+        <thrift.architecture>Mac_OS_X_x86_64</thrift.architecture>
+      </properties>
+    </profile>
+
+
+    <profile>
+      <id>jenkins</id>
+      <activation>
+      </activation>
+
+      <build>
+
+        <plugins>
+
+          <plugin>
+            <artifactId>exec-maven-plugin</artifactId>
+            <groupId>org.codehaus.mojo</groupId>
+            <executions>
+              <execution>
+                <id>push-sources</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>${project.basedir}/bin/commit-sources.sh</executable>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+
+      </build>
+
+    </profile>
+
+
+  </profiles>
+
+
+</project>

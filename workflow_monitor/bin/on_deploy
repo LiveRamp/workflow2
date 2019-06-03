@@ -1,0 +1,3 @@
+#!/bin/bash
+
+service_launcher workflow_monitor workflow_monitor restart

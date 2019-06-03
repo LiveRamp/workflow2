@@ -1,0 +1,26 @@
+workflow_development:
+  adapter: mysql2
+  username: <%= ENV['HUDSON_DB_USER'] %>
+  database: <%= ENV['JOB_NAME'] %>_test
+  password: <%= ENV['HUDSON_DB_PASS'] %>
+  socket: /var/lib/mysql/mysql.sock
+  encode: utf8
+  reconnect: true
+
+workflow_test:
+  adapter: mysql2
+  username: <%= ENV['HUDSON_DB_USER'] %>
+  database: <%= ENV['JOB_NAME'] %>_test
+  password: <%= ENV['HUDSON_DB_PASS'] %>
+  socket: /var/lib/mysql/mysql.sock
+  encode: utf8
+  reconnect: true
+
+test:
+  adapter: mysql2
+  username: <%= ENV['HUDSON_DB_USER'] %>
+  database: <%= ENV['JOB_NAME'] %>_test
+  password: <%= ENV['HUDSON_DB_PASS'] %>
+  socket: /var/lib/mysql/mysql.sock
+  encode: utf8
+  reconnect: true

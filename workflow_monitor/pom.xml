@@ -1,0 +1,97 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>workflow_monitor</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <parent>
+    <groupId>com.liveramp.workflow2</groupId>
+    <artifactId>workflow</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <properties>
+    <skip.db>false</skip.db>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.liveramp.workflow2</groupId>
+      <artifactId>workflow_state</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.hp.gagawa</groupId>
+      <artifactId>gagawa</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.liveramp</groupId>
+      <artifactId>mail_utils</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.1</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.1.1</version>
+
+        <configuration>
+          <tarLongFileMode>posix</tarLongFileMode>
+        </configuration>
+
+        <executions>
+
+          <execution>
+            <id>deploy</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>${project.artifactId}.job</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+              <descriptorRefs>
+                <descriptorRef>workflow-uberjar</descriptorRef>
+              </descriptorRefs>
+              <attach>false</attach>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>deploy-bundle</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptorRefs>
+                <descriptorRef>workflow-deploy</descriptorRef>
+              </descriptorRefs>
+              <attach>true</attach>
+            </configuration>
+          </execution>
+
+        </executions>
+
+        <dependencies>
+          <dependency>
+            <groupId>com.liveramp.workflow2</groupId>
+            <artifactId>workflow_assemblies</artifactId>
+            <version>1.0-SNAPSHOT</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>

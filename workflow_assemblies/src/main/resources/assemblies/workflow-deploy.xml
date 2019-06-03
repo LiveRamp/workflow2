@@ -1,0 +1,32 @@
+<!--TODO sweep this once our old deploy infra is gone -->
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+  <id>workflow-deploy</id>
+  <formats>
+    <format>tar.gz</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+
+  <fileSets>
+
+    <fileSet>
+      <directory>${project.build.directory}</directory>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>*job.jar</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${basedir}</directory>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>config/**</include>
+        <include>monit/**</include>
+        <include>bin/**</include>
+      </includes>
+    </fileSet>
+
+  </fileSets>
+</assembly>

@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <title>Workflows</title>
+
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery.contextMenu.css">
+
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
+
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.min.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+  <script type="text/javascript" src="resources/jquery.contextMenu.js"></script>
+  <script type="text/javascript" src="resources/uri.min.js"></script>
+  <script type="text/javascript" src="resources/bootstrap-dialog.min.js"></script>
+
+  <script type="text/javascript" src="resources/jquery-ui.min.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+
+</head>
+
+<body>
+
+
+<div id="navbar"></div>
+<script>
+  configureNavbar($("#navbar"))
+</script>
+
+<div class="service-container">
+  <div class="row">
+
+    <h4 class="col-md-1">Workflow</h4>
+    <h4 class="col-md-2" id="workflow-name"></h4>
+
+    <h4 class="col-md-1">Execution</h4>
+    <h4 class="col-md-2" id="execution-id"></h4>
+
+    <h4 class="col-md-1">Description</h4>
+    <h4 class="col-md-2" id="workflow-description"></h4>
+
+  </div>
+
+  <div id="attach" class="graph-div">
+    <svg class="main-svg" id="svg-canvas" width=800 height="100%">
+      <g transform="translate(20, 20)"/>
+    </svg>
+  </div>
+
+  <div class="input-append">
+    <button type="button" id="expand-all" class="btn btn-default">Expand All</button>
+    <button type="button" id="collapse-all" class="btn btn-default">Collapse All</button>
+
+    <div class="btn-group" id="datastore-visible-toggle" data-toggle="buttons">
+      <label class="btn btn-primary">
+        <input type="radio" name="options" id="ds_visible"> Show Datastores
+      </label>
+      <label class="btn btn-primary active">
+        <input type="radio" name="options" id="ds_hidden"> Hide Datastores
+      </label>
+    </div>
+
+    <input class="input-xxlarge" type="text" id="reason-input" placeholder="Enter reason for shutdown">
+    <button class="btn btn-danger" id="request-shutdown" type="button">Request Shutdown</button>
+
+    <input class="input" type="text" id="pool" placeholder="Pool">
+
+    <button class="btn btn-warning" id="submit-pool" type="button">Update</button>
+
+  </div>
+
+  <table class="table table-condensed expandable" id="step-table">
+    <thead>
+    <tr>
+      <th>Step Name</th>
+      <th>Status</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>Elapsed</th>
+      <th>Message</th>
+      <th>Action Name</th>
+      <th>ResourceManager Links</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody id="steps">
+    </tbody>
+  </table>
+
+  <table class="table" id="ds-table">
+    <thead>
+    <tr>
+      <th>Datastore Id</th>
+      <th>Name</th>
+      <th>Path</th>
+      <th>Type</th>
+    </tr>
+    </thead>
+    <tbody id="datastores">
+    </tbody>
+  </table>
+</div>
+<script>
+
+  //  state
+
+  var expandedNodes = {};
+  var expandedInfos = {};
+  var dsVisible = false;
+  var currentRaw;
+  var currentData;
+
+  $("#ds-table").hide();
+
+  $("#expand-all").click(function (e) {
+    e.preventDefault();
+    expandAll();
+  });
+
+  $("#collapse-all").click(function (e) {
+    e.preventDefault();
+    collapseAll();
+  });
+
+
+  $("#datastore-visible-toggle").click(function (e) {
+    e.preventDefault();
+    dsVisible = ($(e.target).find('input').attr('id') === 'ds_visible');
+    render();
+  });
+
+  $("#request-shutdown").click(function (e) {
+    e.preventDefault();
+
+    BootstrapDialog.show({
+          title: 'Confirm',
+          message: "Are you sure you want to request a workflow shutdown?  This cannot be reversed.",
+          buttons: [
+            cancelButton(),
+            submitButton(function (dialog) {
+                  submitCommand(
+                      "shutdown",
+                      "reason",
+                      $("#reason-input").val()
+                  );
+                  dialog.close();
+                }
+            )
+          ]
+        }
+    );
+
+
+  });
+
+  $("#submit-pool").click(function (e) {
+    e.preventDefault();
+
+    submitCommand(
+        "set_pool",
+        "pool",
+        $("#pool").val()
+    );
+
+  });
+
+  function submitCommand(command, key, value) {
+
+    var params = getURLParams();
+
+    var args = {
+      command: command
+    };
+
+    args[key] = value;
+    args['id'] = params.id;
+
+    $.ajax({
+      type: 'POST',
+      dataType: 'html',
+      url: "command2",
+      data: args,
+      success: function () {
+        refreshTable();
+      }
+    });
+
+  }
+
+
+  function getCollapsedState(data) {
+
+    var steps = data.steps;
+    var edges = data.edges;
+    var dsEdges = data.datastore_uses;
+    var datastores = data.datastores;
+
+    //  go through all nodes to build a tree of steps
+
+    var treeRoot = {
+      children: {}
+    };
+
+    steps.forEach(function (e) {
+      insertNode(treeRoot, e.id.split("__"), e)
+    });
+
+    var collapsedNodes = [];
+    for (var key in treeRoot.children) {
+      getCollapsedNodes(treeRoot.children[key], key).forEach(function (e) {
+        collapsedNodes.push(e);
+      })
+    }
+
+    //  build index - remaining index
+    var indexMap = {};
+
+    collapsedNodes.forEach(function (e) {
+      e.allIndexes.forEach(function (otherIndex) {
+        indexMap[otherIndex] = e.id;
+      });
+    });
+
+    var mappedEdges = [];
+
+    edges.forEach(function (e) {
+      var newSource = indexMap[e.source];
+      var newTarget = indexMap[e.target];
+
+      if (newSource != newTarget) {
+        mappedEdges.push({
+          source: newSource,
+          target: newTarget
+        });
+      }
+    });
+
+    var dsSteps = {};
+    var dsStepsList = {};
+    dsEdges.forEach(function (e) {
+      var step = indexMap[e.step];
+      var ds = e.datastore;
+      if (!dsSteps[ds]) {
+        dsSteps[ds] = {};
+        dsStepsList[ds] = [];
+      }
+      dsSteps[ds][step] = true;
+      dsStepsList[ds].push(step);
+    });
+
+    var visibleDs = {};
+    datastores.forEach(function (e) {
+      var ds = e.index;
+      if ((ds in dsSteps && Object.keys(dsSteps[ds]).length > 1) || (ds in dsStepsList && dsStepsList[ds].length == 1)) {
+        visibleDs[ds] = true;
+      }
+    });
+
+    var mappedDsEdges = [];
+    dsEdges.forEach(function (e) {
+      if (visibleDs[e.datastore]) {
+        mappedDsEdges.push({
+          datastore: e.datastore,
+          step: indexMap[e.step],
+          connection: e.connection
+        });
+      }
+    });
+
+    return {
+      name: data.name,
+      is_latest_execution: data.is_latest_execution,
+      process_status: data.process_status,
+      shutdown_reason: data.shutdown_reason,
+      pool: data.pool,
+      steps: collapsedNodes,
+      //  just.... my god, I hate this language
+      edges: _.uniq(mappedEdges, function (item) {
+        return JSON.stringify(item);
+      }),
+      dsEdges: _.uniq(mappedDsEdges, function (item) {
+        return JSON.stringify(item);
+      }),
+      datastores: datastores.filter(function (e) {
+        return visibleDs[e.index];
+      })
+    };
+  }
+
+  function expandAll() {
+    currentRaw.steps.forEach(function (e) {
+      var partsPath = [];
+      e.id.split("__").forEach(function (e) {
+        partsPath.push(e);
+        expandedNodes[partsPath.join("__")] = true;
+      });
+    });
+    render();
+  }
+
+  function collapseAll() {
+    expandedNodes = {};
+    render();
+  }
+
+  function expand(path) {
+    expandedNodes[path] = true;
+    render();
+  }
+
+  function collapse(path) {
+    delete expandedNodes[path];
+    render();
+  }
+
+  function getCollapsedNodes(node, path) {
+
+    var terminal = node.terminal;
+
+    if (terminal) {
+      terminal.allIndexes = [terminal.index];
+      terminal.type = "terminal";
+      return [terminal];
+    } else {
+
+      if (expandedNodes[path]) {
+        var nodesToReturn = [];
+
+        for (var key in node.children) {
+          getCollapsedNodes(node.children[key], path + "__" + key).forEach(function (e) {
+            nodesToReturn.push(e)
+          });
+        }
+
+        return nodesToReturn;
+      }
+      else {
+
+        var children = collectChildren(node);
+
+        var childStatuses = {};
+        var minStart = Number.MAX_VALUE;
+        var maxEnd = 0;
+        var minIndex = Number.MAX_VALUE;
+        var allIndexes = [];
+        var mapreduce_jobs = {};
+
+        children.forEach(function (e) {
+          childStatuses[e.status] = true;
+
+          if (e.start_timestamp != 0) {
+            minStart = Math.min(minStart, e.start_timestamp);
+          }
+
+          if (e.end_timestamp != 0) {
+            maxEnd = Math.max(maxEnd, e.end_timestamp);
+          }
+
+          minIndex = Math.min(minIndex, e.index);
+          allIndexes.push(e.index);
+
+          for (var job in e.mapreduce_jobs) {
+            mapreduce_jobs[job] = e.mapreduce_jobs[job];
+          }
+
+        });
+
+        var status = getStatus(childStatuses);
+        if (status == "running") {
+          maxEnd = 0;
+        }
+
+        if (minStart == Number.MAX_VALUE) {
+          minStart = 0;
+        }
+
+        return [
+          {
+            id: path,
+            index: minIndex,
+            allIndexes: allIndexes,
+            status: status,
+            start_timestamp: minStart,
+            end_timestamp: maxEnd,
+            type: "multistep",
+            message: "",
+            action_name: "",
+            job_tracker_links: "",
+            mapreduce_jobs: mapreduce_jobs
+          }
+        ];
+
+      }
+
+    }
+  }
+
+  function getStatus(childStatuses) {
+    if (childStatuses.failed) {
+      return "failed";
+    }
+    if (childStatuses.running) {
+      return "running";
+    }
+    if (childStatuses.waiting || childStatuses.reverted) {
+      return "waiting";
+    }
+    return "completed";
+  }
+
+  function collectChildren(node) {
+
+    var nodes = [];
+
+    if (node.terminal) {
+      return [node.terminal];
+    }
+
+    for (var key in node.children) {
+      collectChildren(node.children[key]).forEach(function (e) {
+        nodes.push(e);
+      });
+    }
+
+    return nodes;
+  }
+
+  function insertNode(node, identifiers, step) {
+
+    if (identifiers.length == 0) {
+      node.terminal = step;
+    } else {
+      var nextStep = identifiers[0];
+
+      if (!node.children[nextStep]) {
+        node.children[nextStep] = {
+          children: {}
+        };
+      }
+
+      insertNode(node.children[nextStep], identifiers.slice(1), step);
+    }
+  }
+
+  function refreshTable() {
+
+    var params = getURLParams();
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: "attempt_state",
+      data: {
+        workflow_attempt_id: params.id
+      },
+      success: function (dataStr) {
+        currentRaw = JSON.parse(dataStr);
+        render();
+      }
+    });
+
+  }
+
+  function encodeStep(step) {
+    return "step-" + step;
+  }
+
+  function encodeDs(ds) {
+    return "ds-" + ds;
+  }
+
+  function decodeStep(step) {
+    return step.slice(5);
+  }
+
+  function decodeDs(ds) {
+    return ds.slice(3);
+  }
+
+  function getParent(step) {
+    return step.split("__").slice(0, -1).join("__");
+  }
+
+  function getEdge(dsEdge) {
+    var step = encodeStep(dsEdge.step);
+    var ds = encodeDs(dsEdge.datastore);
+    var connection = dsEdge.connection;
+
+    if (connection === "reads_from" || connection === "consumes") {
+      return {
+        source: ds,
+        target: step,
+        connection: connection
+      }
+    }
+    //  writes_to, creates, creates_temporary
+    else {
+      return {
+        source: step,
+        target: ds,
+        connection: connection
+      }
+    }
+  }
+
+  function render() {
+    currentData = getCollapsedState(currentRaw);
+
+    var request = $("#request-shutdown");
+    var pool = $("#pool");
+    var reason = $("#reason-input");
+    var submitPool = $("#submit-pool");
+
+    var workflowName = $("#workflow-name");
+    var executionId = $("#execution-id");
+    var attemptDescription = $("#workflow-description");
+
+    workflowName.empty();
+    executionId.empty();
+    attemptDescription.empty();
+
+    workflowName.append(getApplicationLink(currentRaw.execution));
+    executionId.append(getExecutionLink(currentRaw.execution, currentRaw.num_attempts));
+    attemptDescription.append(currentRaw.description);
+
+    pool.val(currentData.pool);
+
+    if (currentData.process_status == "TIMED_OUT" || currentData.process_status == "STOPPED") {
+
+      //  want to show what values were
+      pool.prop('disabled', true);
+      reason.prop('disabled', true);
+
+      //  but hide buttons
+      request.hide();
+      submitPool.hide();
+
+    } else {
+
+      pool.prop('disabled', false);
+
+      submitPool.show();
+
+      if (currentData.shutdown_reason) {
+        reason.val(currentData.shutdown_reason);
+        reason.prop('disabled', true);
+        request.hide();
+      } else {
+        request.show();
+        reason.prop('disabled', false);
+      }
+
+    }
+
+    var steps = $("#steps");
+    steps.empty();
+
+    var datastores = $("#datastores");
+    datastores.empty();
+
+    var g = new dagreD3.graphlib.Graph()
+        .setGraph({rankdir: 'LR'});
+//    var renderer = new dagreD3.render();
+
+    var renderer = new dagreD3.render();
+
+    d3.selectAll(".node").remove();
+    d3.selectAll(".edgePath").remove();
+
+    currentData.steps.forEach(function (e) {
+
+      var start = getPrettyDate(e.start_timestamp);
+      var end = getPrettyDate(e.end_timestamp);
+
+      var prettyId = e.id.replace(/__/g, '\n');
+
+      var urls = [];
+
+      //  otherwise going to be massive list when collapsed
+      if (e.type == "terminal") {
+        Object.keys(e.mapreduce_jobs).sort().forEach(function (jobId) {
+          var mrJob = e.mapreduce_jobs[jobId];
+          if (mrJob) {
+            urls.push('<a href="' + mrJob.tracking_url + '">' + mrJob.job_name + '</a>');
+          }
+        });
+      }
+
+      var links = urls.join('<br>');
+
+      var infoId = "expand-" + e.id;
+      var row = $('<tr class="workflow_step_row"></tr>')
+          .addClass(e.status)
+          .addClass(e.type);
+
+      if (e.type == "terminal") {
+        row.append($('<td><a href="application.html?name=' + currentData.name + '&step_id=' + e.id + '#trends"  >' + prettyId + '</a></td>'));
+      } else {
+        row.append($('<td>' + prettyId + '</td>'));
+      }
+
+      row.append($('<td>' + e.status + '</td>'));
+      row.append($('<td>' + start + '</td>'));
+      row.append($('<td>' + end + '</td>'));
+      row.append($('<td>' + getElapsed(e.start_timestamp, e.end_timestamp) + '</td>'));
+      row.append($('<td>' + e.message + '</td>'));
+      row.append($('<td>' + e.action_name + '</td>'));
+      row.append($('<td>' + links + '</td>'));
+
+      var buttonBlock = $('<td></td>');
+      if (displayRevert(e)) {
+        buttonBlock.append(getRevertButton(e.id));
+      } else if (displayForceComplete(e, currentData.process_status)) {
+        buttonBlock.append(getManuallyCompleteButton(e.id));
+      }
+
+      row.append(buttonBlock);
+
+      steps.append(row);
+
+      if (e.type == "terminal") {
+        row.addClass('row_with_info');
+
+        var div = $('<div class= "info-div"></div>')
+            .attr('id', infoId);
+
+        if (e.failure_message || e.failure_trace) {
+          div.append('<p>');
+          div.append('<h4>Failure Message</h4>');
+          div.append(e.failure_message);
+          div.append('<p>');
+          div.append('<h4>Failure Trace</h4>');
+          div.append(e.failure_trace);
+        }
+
+        if (!_.isEmpty(e.mapreduce_jobs)) {
+          div.append('<h4>Mapreduce Jobs</h4>');
+
+          for (var name in e.mapreduce_jobs) {
+            var job = e.mapreduce_jobs[name];
+
+            div.append('<p>');
+
+            var tableDetails = $('<table class="table workflow_step_row"></table>')
+                .addClass(e.status)
+                .append(
+                    $('<tbody>' +
+                        '<tr>' +
+                        '<td>Job Name</td>' +
+                        '<td>' + job.job_name + '</td>' +
+                        '</tr>' +
+                        '<td>Job ID</td>' +
+                        '<td>' + job.job_id + '</td>' +
+                        '<tr>' +
+                        '<td>Tracking URL</td>' +
+                        '<td> <a href="' + job.tracking_url + '">' + job.tracking_url + '</a></td>' +
+                        '</tr>' +
+                        '</tbody>'
+                    ));
+
+            var counterTbody = $('<tbody></tbody>');
+
+            _.sortBy(job.counters, function (e) {
+              return e.group + e.name
+            }).forEach(function (e) {
+              counterTbody.append($(
+                  '<tr>' +
+                  '<td>' + e.group + '</td>' +
+                  '<td>' + e.name + '</td>' +
+                  '<td>' + e.value + '</td>' +
+                  '</tr>'
+              ));
+            });
+
+            var failureTbody = $('<tbody></tbody>');
+
+            job.task_exceptions.forEach(function (e) {
+              failureTbody.append($(
+                  '<tr>' +
+                  '<td>' + e.task_attempt_id + '</td>' +
+                  '<td>' + e.exception + '</td>' +
+                  '</tr>'
+              ));
+            });
+
+            var exceptionTable = $('<table class="table workflow_step_row"</table>')
+                .addClass(e.status)
+                .append(failureTbody);
+
+            var counterTable = $('<table class="table workflow_step_row"></table>')
+                .addClass(e.status)
+                .append(counterTbody);
+
+            div.append(tableDetails)
+                .append(counterTable)
+                .append(exceptionTable);
+          }
+        }
+
+        if (!expandedInfos[e.id]) {
+          div.addClass('collapsed-box');
+        }
+
+        row.click(function () {
+          div.slideToggle(100);
+          expandedInfos[e.id] = !expandedInfos[e.id];
+        });
+
+        steps
+            .append($('<tr class="workflow_step_row"></tr>')
+                .addClass(e.status)
+                .append($('<td colspan="100" class="hiddenRow"></td>')
+                    .append(div)));
+
+      }
+
+      g.setNode(encodeStep(e.id), {
+        label: prettyId,
+        class: "step-" + e.status + " " + "step-" + e.type,
+        rx: 5,
+        ry: 5
+      });
+    });
+
+    currentData.edges.forEach(function (e) {
+      g.setEdge(encodeStep(e.source), encodeStep(e.target), {
+            class: "depEdge",
+            lineInterpolate: "basis"
+          }
+      );
+    });
+
+    var datastoresTable = $("#ds-table");
+    if (dsVisible) {
+
+      datastoresTable.show();
+
+      currentData.datastores.forEach(function (e) {
+        g.setNode("ds-" + e.index, {
+          label: e.index + ": " + e.name,
+          class: "datastore datastore-" + e.type.split(".").slice(-1),
+          rx: 5,
+          ry: 5
+        });
+
+        datastores.append(
+            $('<tr class="datastore_row">' +
+                '<td>' + e.index + '</td>' +
+                '<td>' + e.name + '</td>' +
+                '<td>' + e.path + '</td>' +
+                '<td>' + e.type + '</td>' +
+                '</tr>')
+        );
+
+      });
+
+      currentData.dsEdges.forEach(function (e) {
+        var edge = getEdge(e);
+        g.setEdge(edge.source, edge.target, {
+          class: "dsEdge",
+          lineInterpolate: "basis"
+
+        });
+      });
+
+    } else {
+      datastoresTable.hide();
+    }
+
+    var svgGroup = d3.select("svg g");
+
+    var svg = d3.select("#svg-canvas");
+
+    svgGroup.attr("transform", "translate(5, 5)");
+    svg.call(d3.behavior.zoom().on("zoom", function redraw() {
+      svgGroup.attr("transform",
+          "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
+    }));
+
+    renderer(svgGroup, g);
+
+
+    svgGroup
+        .selectAll(".step-multistep")
+        .on("click", function (d) {
+          console.log("onclick");
+          expand(decodeStep(d));
+        });
+
+    svgGroup.selectAll(".node")
+
+        .on("mouseover", function (d) {
+
+          var selectedEdges = {};
+          var selectedDsEdges = {};
+
+          currentData.edges.forEach(function (e, i) {
+            if (encodeStep(e.source) == d || encodeStep(e.target) == d) {
+              selectedEdges[i] = true;
+            }
+          });
+
+          currentData.dsEdges.forEach(function (e, i) {
+            if (encodeStep(e.step) == d || encodeDs(e.datastore) == d) {
+              selectedDsEdges[i] = true;
+            }
+          });
+
+          d3.selectAll(".depEdge")
+              .filter(function (d, i) {
+                return selectedEdges[i];
+              })
+              .classed("selectedEdge", true);
+
+          d3.selectAll(".dsEdge")
+              .filter(function (d, i) {
+                return selectedDsEdges[i];
+              })
+              .classed("selectedEdge", true);
+
+        })
+
+        .on("mouseout", function () {
+          d3.selectAll(".edgePath").classed("selectedEdge", false);
+        })
+
+        .on("contextmenu", function (d) {
+          d3.event.preventDefault();
+          var toCollapse = getParent(decodeStep(d));
+          collapse(toCollapse);
+        });
+
+  }
+
+  function isStepMutable(step) {
+    return currentRaw.process_status != "ALIVE" &&
+        currentRaw.is_latest_execution &&
+        step.type == "terminal"
+
+  }
+
+  function displayRevert(step) {
+    return isStepMutable(step) && (step.status == "completed" || step.status == "manually_completed")
+  }
+
+  function displayForceComplete(step, status) {
+    return isStepMutable(step) &&
+        (step.status == "waiting" || step.status == "failed" || step.status == "reverted" ||
+          (step.status == "running" && status == "TIMED_OUT"))
+  }
+
+  function getManuallyCompleteButton(stepId) {
+    var button = $('<button class="btn btn-warning step-cancel-button"  type="button">Complete</button>');
+
+    button.click(function (e) {
+      e.preventDefault();
+
+      BootstrapDialog.show({
+            title: 'Confirm',
+            message: "Are you sure you want to manually complete this step?  It will not be re-attempted upon resume.",
+            buttons: [
+              cancelButton(),
+              submitButton(function (dialog) {
+                    $.ajax({
+                      type: 'POST',
+                      dataType: 'html',
+                      url: "command2",
+                      data: {
+                        command: "manually_complete_step",
+                        step: stepId,
+                        id: currentRaw.id
+                      },
+                      success: function () {
+                        refreshTable();
+                      }
+                    });
+                    dialog.close();
+                  }
+              )
+            ]
+          }
+      );
+    });
+
+    return button;
+  }
+
+
+  function getRevertButton(stepId) {
+    var button = $('<button class="btn btn-warning step-cancel-button"  type="button">Revert</button>');
+
+    button.click(function (e) {
+      e.preventDefault();
+
+      BootstrapDialog.show({
+            title: 'Confirm',
+            message: "Are you sure you want to revert this step?  It will be re-run upon restart.",
+            buttons: [
+              cancelButton(),
+              submitButton(function (dialog) {
+                    $.ajax({
+                      type: 'POST',
+                      dataType: 'html',
+                      url: "command2",
+                      data: {
+                        command: "revert_step",
+                        step: stepId,
+                        id: currentRaw.id
+                      },
+                      success: function () {
+                        refreshTable();
+                      },
+                      error: function (response){
+                        BootstrapDialog.alert({
+                          title: 'Step revert failed!',
+                          message: 'Check that there are no running attempts, later executions, and that the execution is not cancelled.  ' +
+                          'Error trace\n: '+response
+                        });
+                      }
+                    });
+                    dialog.close();
+                  }
+              )
+            ]
+          }
+      );
+    });
+
+    return button;
+  }
+
+  refreshTable();
+  setInterval(refreshTable, 60000);
+
+</script>
+
+</body>
+
+</html>

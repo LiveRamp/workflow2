@@ -1,0 +1,6 @@
+---
+dummy: 
+  dummy: :dummy
+mapreduce_job_task_exceptions:
+  task_attempt_id: :not_indexed
+ 

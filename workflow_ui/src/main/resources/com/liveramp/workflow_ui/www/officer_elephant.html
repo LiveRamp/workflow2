@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <title>Officer Elephant</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
+  <link rel="stylesheet" type="text/css" href="css/c3-0.4.10.min.css">
+  <link rel="stylesheet" type="text/css" href="css/tablesorter-style.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.min.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/uri.min.js"></script>
+  <script type="text/javascript" src="resources/bootbox.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+  <script type="text/javascript" src="resources/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/c3-0.4.10.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.tablesorter.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/step_tree.js"></script>
+  <script type="text/javascript" src="js/cost_tab.js"></script>
+  <script type="text/javascript" src="js/trend_tab.js"></script>
+
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<script>
+  configureNavbar($("#navbar"))
+</script>
+
+<div class="container-fluid service-container">
+
+  <div class="title-row">
+
+    <img src="images/officer_hadoop.png" class="hadoop" alt="Officer Elephant">
+    <h2 class="page-title">Officer Elephant</h2>
+
+    <div class="text-xs-right">
+      <h4 class="page-title">12 hour window</h4>
+    </div>
+
+  </div>
+
+  <table class="table">
+
+    <thead>
+    <tr>
+      <th>App</th>
+      <th>Alert Name</th>
+      <th>Affected Tasks</th>
+      <th>Problem Task %</th>
+    </tr>
+    </thead>
+
+    <tbody id="app-alerts">
+    </tbody>
+
+  </table>
+
+</div>
+
+<span id="loader" class="loader col-xs-1 center-div" align="center"></span>
+
+<script>
+
+  var WINDOW = 12 * 60 * 60 * 1000;
+
+  function getRowClass(taskFailures) {
+
+    if (taskFailures < .03) {
+      return 'OK';
+    }
+
+    if (taskFailures < .25) {
+      return 'WARN'
+    }
+
+    return 'ERROR'
+  }
+
+  $.ajax({
+    type: 'GET',
+    dataType: 'html',
+    url: 'app_alerts',
+    data: {
+      start_time: moment().toDate().getTime() - WINDOW,
+      end_time: moment().toDate().getTime(),
+      pool: getURLParams().pool
+    },
+    success: function (dataStr) {
+
+      $("#loader").remove();
+
+      var sortedApps = _.sortBy(JSON.parse(dataStr).alerts, function (alert) {
+        return -alert.alertTasks;
+      });
+
+      var appAlerts = $("#app-alerts");
+      sortedApps.forEach(function (appAlert) {
+
+        var problemRate = appAlert.alertTasks / appAlert.totalTasks;
+        var rowClass = getRowClass(problemRate);
+
+        var row = $('<tr>' +
+          '<td><a href="application.html?name=' + encodeURIComponent(appAlert.app) + '">' + appAlert.app + '</a></td>' +
+          '<td>' + appAlert.alertName + '</td>' +
+          '<td>' + appAlert.alertTasks + '</td>' +
+          '<td>' + (100 * problemRate).toFixed(2) + '%</td>' +
+          '</tr>'
+        ).addClass(rowClass).addClass('alert_row').addClass('row_with_info');
+
+        appAlerts.append(row);
+
+        var alertDiv = $('<div></div>')
+          .append($('<h4></h4>').text('Alerts'));
+        alertDiv.addClass('collapsed-box');
+
+        appAlert.alerts.forEach(function (context) {
+
+          var alert = context.attributes;
+
+          alertDiv.append($('<table></table>').addClass('table')
+            .append($('<tbody></tbody>')
+              .append($('<tr></tr>').addClass(rowClass + ' alert_row')
+                .append($('<td></td>')
+                  .text('Message:'))
+                .append($('<td></td>')
+                  .append(alert.__message)))
+              .append($('<tr></tr>').addClass(rowClass + ' alert_row')
+                .append($('<td></td>')
+                  .text('Step name:'))
+                .append($('<td></td>')
+                  .append(context.stepToken)))
+              .append($('<tr></tr>').addClass(rowClass + ' alert_row')
+                .append($('<td></td>')
+                  .text('Attempt'))
+                .append($('<td></td>')
+                  .append($('<a></a>').attr('href', 'workflow.html?id=' + context.workflowAttemptId)
+                    .text(context.workflowAttemptId))))
+              .append($('<tr></tr>').addClass(rowClass + ' alert_row')
+                .append($('<td></td>')
+                  .text("Job"))
+                .append($('<td></td>')
+                  .append($('<a></a>').attr('href', context.jobURL)
+                    .text(context.jobName))))));
+        });
+
+        row.click(function () {
+          alertDiv.slideToggle(100);
+        });
+
+        appAlerts.append($('<tr></tr>')
+          .append($('<td colspan="100" class="hiddenRow"></td>')
+            .append(alertDiv))
+          .addClass(rowClass + ' alert_row'));
+
+      });
+
+    }
+  });
+
+</script>
+
+</body>
+

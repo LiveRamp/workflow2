@@ -1,0 +1,65 @@
+<div class="container-fluid service-container">
+  <div class="row">
+    <div class="col-md-10 col-md-offset-1">
+      <div class="tabbable">
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#absolute" data-toggle="tab">Absolute</a></li>
+          <li><a href="#trends" data-toggle="tab">Change</a></li>
+        </ul>
+        <div class="tab-content">
+          <br>
+
+          <div class="tab-pane active" id="absolute">
+            <p>
+              From:
+              <label for="absolute-start-date"></label>
+              <input type="text" id="absolute-start-date" readonly='true'>
+              Until:
+              <label for="absolute-end-date"></label>
+              <input type="text" id="absolute-end-date" readonly='true'>
+            </p>
+            <table class="table tablesorter absolute-costs table-striped fixed-width-table">
+              <thead>
+              <tr id="absolute-tr">
+                <th class="col-md-4">Workflow Name</th>
+              </tr>
+              </thead>
+
+              <tbody id="costs">
+
+              </tbody>
+            </table>
+          </div>
+          <div class="tab-pane" id="trends">
+            <p>
+              End period 1:
+              <label for="trends-end1-date"></label>
+              <input type="text" id="trends-end1-date" readonly='true'>
+              End period 2:
+              <label for="trends-end2-date"></label>
+              <input type="text" id="trends-end2-date" readonly='true'>
+              <label for="trends-time">Time: </label><select id="trends-time">
+              <option value="1">One Day</option>
+              <option value="7" selected="selected">One Week</option>
+              <option value="14">Two weeks</option>
+              <option value="30">One Month</option>
+            </select>
+            </p>
+            <table class="table tablesorter workflow-delta fixed-width-table">
+              <thead>
+              <tr id="relative-tr">
+                <th class="col-md-4">Workflow Name</th>
+
+              </tr>
+              </thead>
+
+              <tbody id="cost-trends">
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

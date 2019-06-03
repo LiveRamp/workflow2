@@ -1,0 +1,31 @@
+h1 {
+  margin-left: 20px;
+}
+
+/*th {*/
+  /*min-width: 500px;*/
+/*}*/
+
+.cost_row
+  td.execution-frequency input {
+    width: 80px;
+  }
+  td.shpe input {
+    width: 100px;
+  }
+
+.glyphicon {
+  margin-left: 10px;
+}
+
+#slot-machine-ratio, #calibration-machine-count, #utilization-ratio {
+  width: 50px;
+}
+
+.panel-heading button {
+    float: right;
+}
+
+.machines-needed td {
+  text-align: center;
+}

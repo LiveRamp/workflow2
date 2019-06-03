@@ -1,0 +1,10 @@
+
+source 'https://rubygems.org' do
+
+  gem 'rails', '3.0.20'
+  gem 'mysql2'
+  gem 'thrift', '0.9.3.0'
+  gem 'activerecord', '3.0.20'
+  gem 'workflow2_types', '1.0.4'
+
+end

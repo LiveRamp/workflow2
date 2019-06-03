@@ -1,0 +1,14 @@
+#!/bin/bash
+
+MAIN_CLASS="com.liveramp.workflow_ui.WorkflowDbWebServer"
+
+mkdir -p log
+
+if [[ -z "$(ps ax | grep $MAIN_CLASS | grep -v grep)" ]]; then
+  cd /apps/workflow_ui/current
+  nohup java -Djava.io.tmpdir=/var/www/tmp -Xmx12000m -Dworkflow.ui.properties=config/application.properties -Dlog4j.configuration=com/liveramp/workflow_ui/log4j/drfa.log4j.xml -Djava.net.preferIPv4Stack=true -Dworkflow.properties=config/application.properties -cp workflow_ui.job.jar $MAIN_CLASS $* > log/workflow_ui.out 2> log/workflow_ui.err < /dev/null &
+else
+  echo "Workflow UI already running!"
+  exit 1
+fi
+

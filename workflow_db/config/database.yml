@@ -1,0 +1,7 @@
+regenerate:
+  database: workflow_db_test
+  adapter: mysql2
+  host: 127.0.0.1
+  username: root
+  password:
+  port: 31313

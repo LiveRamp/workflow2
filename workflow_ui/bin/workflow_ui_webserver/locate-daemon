@@ -1,0 +1,3 @@
+#!/bin/bash
+
+jps -l | grep com.liveramp.workflow_ui.WorkflowDbWebServer | awk '{print $1}' 2>/dev/null

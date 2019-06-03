@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  mysql:
+    environment:
+    - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    image: "mysql:5.7.24"
+    ports:
+    - 31313:3306
+    networks:
+    - shared
+networks:
+  shared:
+    driver: bridge
