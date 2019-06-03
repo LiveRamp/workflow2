@@ -26,7 +26,7 @@ import com.rapleaf.jack.queries.where_operators.IsNull;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestSummarizer extends WorkflowUITestCase {
+public class SummarizerIT extends WorkflowUITestCase {
   private static final DateTimeFormatter FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
   @Test

@@ -30,7 +30,7 @@ import com.liveramp.workflow_state.WorkflowRunnerNotification;
 import static com.liveramp.commons.test.TestUtils.assertStringsContainSubstring;
 import static org.junit.Assert.assertEquals;
 
-public class TestExecutionAlerter extends WorkflowMonitorTestCase {
+public class ExecutionAlerterIT extends WorkflowMonitorTestCase {
 
   private static final String MR_JOB_ALERT_MESSSAGE = "Alerting about job ";
   private static final String WF_EXECUTION_ALERT_MESSAGE = "Alerting about execution ";

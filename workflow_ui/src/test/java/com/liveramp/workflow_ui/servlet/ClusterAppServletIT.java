@@ -21,7 +21,7 @@ import com.liveramp.workflow_ui.WorkflowUITestCase;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestClusterAppServlet extends WorkflowUITestCase {
+public class ClusterAppServletIT extends WorkflowUITestCase {
   private static final DateTimeFormatter FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
   @Test

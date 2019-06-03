@@ -21,7 +21,7 @@ import com.liveramp.workflow_ui.WorkflowUITestCase;
 
 import static org.junit.Assert.*;
 
-public class TestSweepOldExecutions extends WorkflowUITestCase {
+public class SweepOldExecutionsIT extends WorkflowUITestCase {
 
   @Test
   public void testSafety() throws IOException {
