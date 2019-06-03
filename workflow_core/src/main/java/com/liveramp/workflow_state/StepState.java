@@ -8,7 +8,6 @@ import com.google.common.collect.Multimap;
 
 import com.liveramp.workflow.types.StepStatus;
 
-//  TODO replace usages with StepAttempt
 public class StepState {
 
   //  immutable
