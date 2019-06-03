@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MAIN_CLASS="com.liveramp.workflow_ui.WorkflowDbWebServer"
+MAIN_CLASS="com.liveramp.workflow2.workflow_ui.WorkflowDbWebServer"
 
 mkdir -p log
 

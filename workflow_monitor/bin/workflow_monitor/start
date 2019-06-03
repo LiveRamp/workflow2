@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MAIN_CLASS="com.liveramp.workflow_monitor.WorkflowDbMonitorRunner"
+MAIN_CLASS="com.liveramp.workflow2.workflow_monitor.WorkflowDbMonitorRunner"
 
 if [[ -z "$(ps ax | grep $MAIN_CLASS | grep -v grep)" ]]; then
   cd /apps/workflow_monitor/current
