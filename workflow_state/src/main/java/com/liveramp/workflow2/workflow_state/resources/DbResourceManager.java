@@ -31,24 +31,8 @@ public class DbResourceManager {
     return create(new WorkflowDbFactory.Default());
   }
 
-  @Deprecated
-  public static ResourceDeclarer create(IWorkflowDb workflowDb) throws IOException {
-    return new ResourceDeclarerContainer<>(
-        new ResourceDeclarerContainer.MethodNameTagger(),
-        new RootManager<>(
-            new DbStorageRootDeterminer(workflowDb),
-            dbStorage(workflowDb))
-    );
-  }
-
   public static DbStorage.Factory dbStorage(WorkflowDbFactory factory) {
     return new DbStorage.Factory(factory);
-  }
-
-
-  @Deprecated
-  public static DbStorage.Factory dbStorage(IWorkflowDb workflowDb) {
-    return new DbStorage.Factory(new WorkflowDbFactory.Static(workflowDb));
   }
 
   public interface WorkflowDbFactory {
@@ -59,21 +43,6 @@ public class DbResourceManager {
       public IWorkflowDb create() {
         IWorkflowDb workflowDb = new DatabasesImpl().getWorkflowDb();
         workflowDb.disableCaching();
-        return workflowDb;
-      }
-    }
-
-    @Deprecated
-    class Static implements WorkflowDbFactory {
-
-      private final IWorkflowDb workflowDb;
-
-      public Static(IWorkflowDb workflowDb) {
-        this.workflowDb = workflowDb;
-      }
-
-      @Override
-      public IWorkflowDb create() {
         return workflowDb;
       }
     }

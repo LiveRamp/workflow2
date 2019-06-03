@@ -104,7 +104,7 @@ public class DbStorageIT extends ResourceDbManagerTestCase {
 
   @Test
   public void testSwitchingBetweenJavaAndJsonSerialization() throws IOException {
-    ResourceManager resourceManager = DbResourceManager.create(workflowDb)
+    ResourceManager resourceManager = DbResourceManager.create(new DbResourceManager.WorkflowDbFactory.Default())
         .create(0L, "Test");
 
     ResourceRoot resourceRoot = Accessors.first(workflowDb.resourceRoots().findAll());
@@ -132,7 +132,7 @@ public class DbStorageIT extends ResourceDbManagerTestCase {
 
   @Test
   public void testJsonForListsOfNumbers() throws IOException {
-    ResourceManager resourceManager = DbResourceManager.create(workflowDb)
+    ResourceManager resourceManager = DbResourceManager.create(new DbResourceManager.WorkflowDbFactory.Default())
         .create(0L, "Test");
 
     Resource<List<Integer>> listOfIntegersResource = resourceManager.resource(listOfIntegers, "list-of-integers");

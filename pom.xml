@@ -42,7 +42,6 @@
 
   <properties>
     <skip.db>true</skip.db>
-    <skip.assembly>true</skip.assembly>
   </properties>
 
   <modules>
