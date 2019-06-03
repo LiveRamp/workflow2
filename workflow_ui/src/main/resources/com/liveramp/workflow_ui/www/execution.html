@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <title>Active Workflows</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+  <link rel="stylesheet" type="text/css" href="css/boostrap-dialog.min.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.min.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/uri.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+  <script type="text/javascript" src="resources/bootstrap-dialog.min.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<script>
+  configureNavbar($("#navbar"))
+</script>
+<div class="service-container">
+  <h3>Execution</h3>
+  <table class="table table-condensed expandable" style="border-collapse:collapse;">
+    <tbody>
+    <tr>
+      <td>ID</td>
+      <td id="ex_id"></td>
+    </tr>
+    <tr>
+      <td>Name</td>
+      <td id="ex_name"></td>
+    </tr>
+    <tr>
+      <td>Scope</td>
+      <td id="ex_scope"></td>
+    </tr>
+    <tr>
+      <td>Status</td>
+      <td id="ex_status"></td>
+    </tr>
+    <tr>
+      <td>App Type</td>
+      <td id="ex_app_type"></td>
+    </tr>
+    <tr>
+      <td>Start Time</td>
+      <td id="ex_start_time"></td>
+    </tr>
+    <tr>
+      <td>End Time</td>
+      <td id="ex_end_time"></td>
+    </tr>
+    <tr>
+      <td>Actions</td>
+      <td>
+        <button type="button" id="cancel" class="btn btn-danger">Cancel</button>
+      </td>
+    </tr>
+    <tr>
+
+    </tr>
+    <tr></tr>
+
+    </tbody>
+  </table>
+
+  <h3>Attempts</h3>
+  <table class="table">
+    <thead>
+    <tr>
+      <th>Started</th>
+      <th>Ended</th>
+      <th>Status</th>
+      <th>Host</th>
+      <th>User</th>
+      <th>Dir</th>
+      <th>Jar</th>
+      <th>Commit</th>
+    </tr>
+    </thead>
+    <tbody id="attempts">
+    </tbody>
+  </table>
+
+  <br>
+
+  <h3>Notifications</h3>
+  <table class="table">
+    <thead>
+    <tr>
+      <th>Email</th>
+      <th>Notifications</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody id="notifications">
+    </tbody>
+  </table>
+  <button type="button" id="add-notification" class="btn btn-success">Add</button>
+</div>
+<script>
+
+  $("#cancel").click(function (e) {
+    e.preventDefault();
+
+    BootstrapDialog.show({
+          title: 'Confirm',
+          message: "Are you sure you want to cancel this workflow execution?  This cannot be reversed.",
+          buttons: [
+            cancelButton(),
+            submitButton(function (dialog) {
+                  dialog.close();
+                  $.ajax({
+                    type: 'POST',
+                    dataType: 'html',
+                    url: "execution_command",
+                    data: {
+                      id: getURLParams().id,
+                      command: "cancel"
+                    },
+                    success: function () {
+                      refreshTable();
+                    }
+                  })
+                }
+            )
+          ]
+        }
+    );
+
+  });
+
+  function refreshTable() {
+    $.ajax({
+      type: 'GET',
+      dataType: 'html',
+      url: "executions",
+      data: {
+        id: getURLParams().id,
+        details: 'true'
+      },
+      success: function (dataStr) {
+        var results = JSON.parse(dataStr);
+
+        var attempts = $("#attempts");
+        attempts.empty();
+
+        //  know there's only one (queried by id)
+        var data = results.values[0];
+
+        data.attempts.forEach(function (e) {
+          var row = $('<tr class="workflow_row"></tr>').addClass(attemptDisplayStatus(e));
+
+          attemptDetails(e).forEach(function (e) {
+            row.append(e);
+          });
+
+          attemptCommon(e).forEach(function (e) {
+            row.append(e);
+          });
+
+          attempts.append(row);
+        });
+
+        var $exId = $("#ex_id");
+        var $exName = $("#ex_name");
+        var $exScope = $("#ex_scope");
+        var $notificationsTable = $("#notifications");
+
+        $exId.empty();
+        $exName.empty();
+        $exScope.empty();
+        $notificationsTable.empty();
+
+        $exId.text(data.execution.id);
+        $exName.append($('<a href="application.html?name=' + encodeURIComponent(data.execution.name) + '">' + data.execution.name + '</a>'));
+        $exScope.append($('<a href="application.html?name=' + encodeURIComponent(data.execution.name) + '&scope_identifier=' + encodeURIComponent(data.execution.scope_identifier) +'">' + data.execution.scope_identifier + '</a>'));
+
+        var status = $("#ex_status");
+        status
+            .removeClass()
+            .text(data.execution.status);
+        status
+            .parent()
+            .addClass("workflow_row")
+            .addClass(displayStatus(data.execution, data.attempts[0]));
+
+        $("#ex_app_type").text(data.execution.app_type);
+        $("#ex_start_time").text(getPrettyDate(data.execution.start_time));
+        $("#ex_end_time").text(getPrettyDate(data.execution.end_time));
+
+        var cancelButton = $("#cancel");
+        if (data.can_cancel) {
+          cancelButton.show();
+        } else {
+          cancelButton.hide();
+        }
+
+        populateNotifications(data.configured_notifications,
+            $notificationsTable,
+            {execution_id: getURLParams().id},
+            refreshTable
+        );
+
+        configureAddNotification($("#add-notification"), {execution_id: getURLParams().id}, refreshTable);
+
+      }
+    })
+  }
+
+  refreshTable();
+
+</script>
+
+</body>

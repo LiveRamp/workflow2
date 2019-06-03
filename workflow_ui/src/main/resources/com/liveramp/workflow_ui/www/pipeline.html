@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <meta charset="UTF-8">
+  <title>Workflow Cost</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/workflow_service.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
+
+  <script type="text/javascript" src="resources/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.cookie.js"></script>
+  <script type="text/javascript" src="resources/bootstrap.min.js"></script>
+  <script type="text/javascript" src="resources/moment-with-langs.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="resources/dagre-d3.min.js"></script>
+  <script type="text/javascript" src="resources/uri.min.js"></script>
+  <script type="text/javascript" src="resources/underscore-min.js"></script>
+  <script type="text/javascript" src="resources/jquery-ui.min.js"></script>
+
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/application_comparison.js"></script>
+
+</head>
+
+<body>
+
+<div id="navbar"></div>
+<div id="contents"></div>
+
+<div id="legend" class="legend"></div>
+
+<div id="attach" class="pipeline-div">
+  <svg class="pipeline-svg" id="svg-canvas" width=800 height="100%">
+    <g transform="translate(20, 20)"/>
+  </svg>
+</div>
+
+<script>
+  configureNavbar($("#navbar"))
+</script>
+
+<script>
+
+  $.ajax({
+    type: 'GET',
+    dataType: 'html',
+    url: "pipeline",
+    data: {
+
+      started_after: moment()
+          .subtract(14, 'days')
+          .startOf('day').toDate().getTime(),
+
+      started_before: moment()
+          .add(1, 'days')
+          .startOf('day').toDate().getTime()
+
+    },
+    success: function (dataStr) {
+
+      var data = JSON.parse(dataStr);
+
+      var g = new dagreD3.graphlib.Graph()
+          .setGraph({rankdir: 'LR'})
+          .setDefaultEdgeLabel(function () {
+            return {};
+          });
+
+      var render = new dagreD3.render();
+
+      var svg = d3.select("#svg-canvas");
+      var svgGroup = d3.select("svg g");
+
+      //  enable zoom and scrolling
+      svgGroup.attr("transform", "translate(5, 5)");
+      svg.call(d3.behavior.zoom().on("zoom", function redraw() {
+        svgGroup.attr("transform",
+            "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
+      }));
+
+      var teams = {};
+      Object.keys(data.applications).forEach(function (e) {
+        var team = data.applications[e].attempt.pool.split('\.')[1];
+        if (!team) {
+          team = "unknown";
+        }
+        teams[team] = true;
+      });
+
+
+      console.log(teams);
+
+      var legend = $("#legend");
+      var teamClasses = {};
+      Object.keys(teams).sort().forEach(function (e, index) {
+        var teamDiv = "team" + index;
+        teamClasses[e] = teamDiv;
+        legend
+            .append($("<span></span>")
+                .text(e)
+                .addClass(teamDiv + "-legend legend-element"))
+            .append("   ");
+      });
+
+      Object.keys(data.applications).forEach(function (e) {
+        var app = data.applications[e];
+
+        var team = app.attempt.pool.split('\.')[1];
+        if(!team){
+          team = "unknown";
+        }
+
+        g.setNode(e, {
+          labelType: "html",
+          label: $("<div class='node-label'></div>")
+              .append($("<div class='app-label'></div>")
+                  .append($('<td><a class="app-link" href="application.html?name=' + encodeURIComponent(app.execution.name) + '">' + getDisplayName(app.execution.name) + '</a>')))
+              .html(),
+          rx: 5,
+          ry: 5,
+          class: 'app-node ' + teamClasses[team]
+        });
+      });
+
+      data.links.forEach(function (e) {
+        g.setEdge(e.producer, e.consumer, {
+          lineInterpolate: "basis",
+          class: 'app-edge'
+        });
+      });
+
+      render(svgGroup, g);
+
+    }
+  });
+
+</script>
+
+</body>
+
+</html>
