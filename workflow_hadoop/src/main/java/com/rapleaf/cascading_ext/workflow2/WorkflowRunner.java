@@ -21,6 +21,11 @@ import com.rapleaf.cascading_ext.workflow2.options.HadoopWorkflowOptions;
 import com.rapleaf.cascading_ext.workflow2.state.InitializedWorkflow;
 import com.rapleaf.cascading_ext.workflow2.state.WorkflowPersistenceFactory;
 
+/**
+ * Use {@link WorkflowRunners} instead.
+ * This is deprecated for public (outside of this package) usage due to connection leaks.
+ */
+@Deprecated
 public final class WorkflowRunner extends BaseWorkflowRunner<WorkflowRunner.ExecuteConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WorkflowRunner.class);
 

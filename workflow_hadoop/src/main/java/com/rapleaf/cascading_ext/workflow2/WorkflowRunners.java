@@ -16,7 +16,6 @@ import com.rapleaf.cascading_ext.workflow2.state.HdfsInitializedPersistence;
 import com.rapleaf.cascading_ext.workflow2.state.InitializedWorkflow;
 import com.rapleaf.cascading_ext.workflow2.state.WorkflowPersistenceFactory;
 
-//  TODO if this officially covers all cases, should deprecate other constructors (or delete this comment if it's too annoying)
 public class WorkflowRunners {
 
   public static void dbRun(
