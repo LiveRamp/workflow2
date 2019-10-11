@@ -66,8 +66,13 @@ public class UserConfigServlet extends HttpServlet {
   }
 
   private String getUsername() {
-    UserDetails ldapUser = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    return ldapUser.getUsername().toLowerCase().trim();
+    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    if (principal instanceof UserDetails) {
+      UserDetails ldapUser = (UserDetails)principal;
+      return ldapUser.getUsername().toLowerCase().trim();
+    } else {
+      return "unknown";
+    }
   }
 
   @Override

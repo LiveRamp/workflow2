@@ -10,7 +10,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.*;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -32,31 +33,33 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Autowired
   Environment environment;
+  private String authMethod;
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-
-    http
-        .authorizeRequests()
-        .antMatchers("/login*", "/resources/**", "/css/**", "/fonts/**", "/images/**").permitAll()
-        .anyRequest().authenticated()
-        .and()
-        .formLogin()
-        .loginPage("/login.html")
-        .and()
-        .httpBasic()
-        .and()
-        .csrf()
-        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
-
+    if (getAuthMethod().equals("none")) {
+      http.authorizeRequests()
+          .antMatchers("/*")
+          .permitAll();
+    } else {
+      http
+          .authorizeRequests()
+          .antMatchers("/login*", "/resources/**", "/css/**", "/fonts/**", "/images/**").permitAll()
+          .anyRequest().authenticated()
+          .and()
+          .formLogin()
+          .loginPage("/login.html")
+          .and()
+          .httpBasic()
+          .and()
+          .csrf()
+          .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+    }
   }
 
   @Autowired
   public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-
-    String authMethod = environment.getProperty("ui.auth.method");
-
-    if(authMethod.equals("ldap")){
+    if (getAuthMethod().equals("ldap")) {
       auth
           .ldapAuthentication()
           .userSearchBase(environment.getProperty("ui.auth.ldap.userSearchBase"))
@@ -64,7 +67,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
           .groupSearchBase(environment.getProperty("ui.auth.ldap.groupSearchBase"))
           .groupSearchFilter(environment.getProperty("ui.auth.ldap.groupSearchFilter"))
           .contextSource(contextSource());
-    }else if(authMethod.equals("fixed")){
+    } else if (getAuthMethod().equals("fixed")) {
 
       String userList = environment.getProperty("ui.auth.method.fixed.users");
       String[] users = userList.split(",");
@@ -78,14 +81,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
       auth.userDetailsService(manager);
 
-    }
+    } else if (getAuthMethod().equals("none")) {
 
+    }
     //  TODO add OAuth2
-
-    else{
-      throw new RuntimeException("No authentication configured: found "+authMethod);
+    else {
+      throw new RuntimeException("No authentication configured: found " + getAuthMethod());
     }
 
+  }
+
+  private String getAuthMethod() {
+    if (authMethod == null) {
+      authMethod = environment.getProperty("ui.auth.method");
+    }
+    return authMethod;
   }
 
   @Bean
@@ -93,7 +103,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     String authMethod = environment.getProperty("ui.auth.method");
 
-    if(authMethod.equals("ldap")){
+    if (authMethod.equals("ldap")) {
 
       return new DefaultSpringSecurityContextSource(
           Arrays.asList(environment.getProperty("ui.auth.ldap.providerURLs").split(",")),
