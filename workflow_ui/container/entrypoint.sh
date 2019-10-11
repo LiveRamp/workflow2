@@ -11,9 +11,10 @@ DB_NAME=$( cat config/database.yml | sed -n -e "/^$JETTY_ENV:/,\$p" | grep datab
 USERNAME=$( cat config/database.yml | sed -n -e "/^$JETTY_ENV:/,\$p" | grep username | awk -F: '{print $2}' | head -1 | xargs )
 PASSWORD=$( cat config/database.yml | sed -n -e "/^$JETTY_ENV:/,\$p" | grep password | awk -F: '{print $2}' | head -1 | xargs )
 HOST=$( cat config/database.yml | sed -n -e "/^$JETTY_ENV:/,\$p" | grep host | awk -F: '{print $2}' | head -1 | xargs )
+PORT=$( cat config/database.yml | sed -n -e "/^$JETTY_ENV:/,\$p" | grep port | awk -F: '{print $2}' | head -1 | xargs )
 
 # set up jetty session db if it doesn't exist already
-mysql -h $HOST -u$USERNAME -p$PASSWORD -e "create database if not exists $DB_NAME" || true
+mysql -h $HOST -P $PORT -u$USERNAME -p$PASSWORD -e "create database if not exists $DB_NAME" || true
 
 java -Djava.io.tmpdir=/var/www/tmp -Xmx12000m  -Dlog4j.configuration=com/liveramp/workflow_ui/log4j/console.log4j.xml -Djava.net.preferIPv4Stack=true -cp workflow_ui.job.jar \
   com.liveramp.workflow_ui.WorkflowDbWebServer
