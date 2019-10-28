@@ -40,7 +40,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     if (getAuthMethod().equals("none")) {
       http.authorizeRequests()
           .antMatchers("/*")
-          .permitAll();
+          .permitAll()
+          .and()
+          .csrf()
+          .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
     } else {
       http
           .authorizeRequests()
