@@ -60,7 +60,7 @@ import com.rapleaf.jack.queries.where_operators.EqualTo;
 public class DbPersistence implements WorkflowStatePersistence {
   private static final Logger LOG = LoggerFactory.getLogger(DbPersistence.class);
 
-  public static final long HEARTBEAT_INTERVAL = 15 * 1000; //  15s
+  public static final long HEARTBEAT_INTERVAL = 5 * 60 * 1000; //  5m
   public static final int NUM_HEARTBEAT_TIMEOUTS = 4;  //  if an attempt misses 4 heartbeats, assume it is dead
 
   private final MailBuffer testMailBuffer;
