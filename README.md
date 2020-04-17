@@ -339,6 +339,7 @@ When we run the workflow, we can see the value is passed:
 
 Note that this would work _even if the second step had failed on its first Attempt_.
 
+Note: Resources are not supported in Multi-Step Actions as they are not executed the same way as standard Actions. The constructor of a Multi-Step Action defines the Steps the Workflow will run. Reading or writing from a Resource will not work as none of the Steps have executed at this point. 
 
 #### Died Unclean
 
